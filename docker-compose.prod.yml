@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  web:
+    container_name: easytask-web-prod
+    build:
+      context: .
+      target: production
+      dockerfile: Dockerfile
+    # Alternativamente, publique a imagem e use 'image: seu-registro/easytask-web:tag'
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    # Exemplos de labels para proxy reverso (Traefik). Ajuste e descomente se necessário:
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.easytask.rule=Host(`app.seu-dominio.com`)"
+    #   - "traefik.http.routers.easytask.entrypoints=websecure"
+    #   - "traefik.http.routers.easytask.tls=true"
+    #   - "traefik.http.services.easytask.loadbalancer.server.port=3000"
+    # networks:
+    #   - proxy
+# networks:
+#   proxy:
+#     external: true
+

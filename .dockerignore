@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+npm-debug.log
+.npmrc
+.env
+.env.*
+Dockerfile*
+docker-compose*.yml
+.git
+.gitignore
+.DS_Store
+
+

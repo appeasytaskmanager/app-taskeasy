@@ -1,0 +1,18 @@
+services:
+  web:
+    container_name: easytask-web
+    build:
+      context: .
+      target: dev
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    # Em ambientes Windows, o bind pode ser mais lento; ajuste se necessário.
