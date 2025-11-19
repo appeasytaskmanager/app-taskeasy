@@ -68,6 +68,9 @@ export default function Home() {
         </div>
       </main> */}
       <Task />
+      <h1>teste Ruan Trindade</h1>
+      <h1>teste1</h1>
+      <h1>teste2</h1>
       <Button action={() => alert("Diff")} title="Salvar" />
     </div>
   );
