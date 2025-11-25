@@ -11,14 +11,11 @@ import { NextResponse } from "next/server";
  */
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, params.id))
-      .limit(1);
+    const { id } = await params;
+    const user = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
     if (user.length === 0) {
       return NextResponse.json(
@@ -47,9 +44,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, email } = body;
 
@@ -60,7 +58,7 @@ export async function PUT(
         email,
         updatedAt: new Date(),
       })
-      .where(eq(users.id, params.id))
+      .where(eq(users.id, id))
       .returning();
 
     if (updatedUser.length === 0) {
@@ -90,12 +88,13 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const deletedUser = await db
       .delete(users)
-      .where(eq(users.id, params.id))
+      .where(eq(users.id, id))
       .returning();
 
     if (deletedUser.length === 0) {
