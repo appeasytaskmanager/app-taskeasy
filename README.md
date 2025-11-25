@@ -152,3 +152,8 @@ Esta documentação é mantida atualizada com as últimas versões das ferrament
 ---
 
 **💡 Dica:** Use o índice no início de cada documento para navegação rápida.
+
+## 🚀 Como Começar
+
+- Fazer o git clone do repositório
+- Mudar para a branch develop para ver o projeto em desenvolvimento
