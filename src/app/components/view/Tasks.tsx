@@ -1,10 +1,10 @@
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 
 export const Task = () => {
   return (
     <div>
       <p>Tasks</p>
-      <Button action={() => console.log("Oi")} title="Oi" />
+      <Button onClick={() => console.log("Oi")}>Oi</Button>
     </div>
   );
 };

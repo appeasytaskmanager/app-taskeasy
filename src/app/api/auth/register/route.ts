@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { users } from "@/db/schema";
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm"
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {

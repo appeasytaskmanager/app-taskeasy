@@ -24,3 +24,4 @@ export async function GET(req: NextRequest) {
         user_id_from_token: userId 
     });
 }
+

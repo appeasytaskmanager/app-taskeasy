@@ -1,7 +1,10 @@
 "use client";
-import { useState } from "react";
-import { Button } from "../../../ui/Button";
+
+import { Button } from "@/app/components/ui/button";
+import LogoEasyTask from "@/app/components/ui/logo";
+import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export function Cadastro() {
   const [name, setNome] = useState("");
@@ -9,7 +12,15 @@ export function Cadastro() {
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
 
-  const handleCadastro = async () => {
+  const handleCadastro = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name || !email || !password) {
+      setErro("É necessário preencher todos os campos.");
+      return;
+    }
+
+    setErro("");
     const response = JSON.stringify({ name, email, password });
     const responseApi = await fetch("/api/auth/register", {
       method: "POST",
@@ -20,68 +31,93 @@ export function Cadastro() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-8 bg-white rounded-2xl shadow-xl w-96 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-      <h2 className="text-3xl font-bold text-center text-zinc-900 dark:text-zinc-100">
-        Criar Conta
-      </h2>
+    <div className="w-full">
+      <LogoEasyTask />
+      <div className="flex flex-col gap-6 p-8 rounded-md shadow-xl w-[460px] bg-zinc-900 border border-zinc-800">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold text-center text-zinc-900 dark:text-zinc-100">
+            Criar Conta
+          </h2>
+          <p className="text-sm text-center text-zinc-700 dark:text-zinc-300">
+            Cadastre-se para começar
+          </p>
+        </div>
 
-      <div className="flex flex-col gap-3">
-        <form onSubmit={handleCadastro}>
-          <input
-            type="text"
-            placeholder="Nome"
-            value={name}
-            onChange={(e) => setNome(e.target.value)}
-            className="px-4 py-3 border rounded-lg text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
-          />
+        <form onSubmit={handleCadastro} className="flex flex-col gap-5">
+          {/* Campo de nome */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="name"
+              className="text-xs text-zinc-700 dark:text-zinc-300"
+            >
+              Nome
+            </label>
+            <input
+              type="text"
+              placeholder="Seu nome completo"
+              value={name}
+              onChange={(e) => setNome(e.target.value)}
+              className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
+            />
+          </div>
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="px-4 py-3 border rounded-lg text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
-          />
+          {/* Campo de email */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="email"
+              className="text-xs text-zinc-700 dark:text-zinc-300"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="px-4 py-3 border rounded-lg text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
-          />
+          {/* Campo de senha */}
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor="password"
+              className="text-xs text-zinc-700 dark:text-zinc-300"
+            >
+              Senha
+            </label>
+            <input
+              type="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
+            />
+          </div>
 
-          {/* <input
-            type="password"
-            placeholder="Confirmar Senha"
-            value={confirmarSenha}
-            onChange={(e) => setConfirmarSenha(e.target.value)}
-            className="px-4 py-3 border rounded-lg text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
-          /> */}
+          {/* Mensagem de erro */}
+          {erro && <p className="text-xs text-red-500">{erro}</p>}
+
+          {/* Botão de cadastro */}
+          <Button
+            variant="default"
+            type="submit"
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+          >
+            Cadastrar
+          </Button>
         </form>
-        <button
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition"
-          // type="submit"
-          // onClick={handleCadastro}
-          onClick={() => handleCadastro()}
-        >
-          Cadastrar
-        </button>
+
+        <p className="text-sm text-center text-zinc-700 dark:text-zinc-300">
+          Já tem conta?{" "}
+          <Link
+            href="/auth/login"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Entrar
+          </Link>
+        </p>
       </div>
-
-      {erro && <p className="text-sm text-red-500 text-center">{erro}</p>}
-
-      {/* <Button title="Cadastrar" action={handleCadastro} /> */}
-
-      <p className="text-sm text-center text-zinc-700 dark:text-zinc-300">
-        Já tem conta?{" "}
-        <Link
-          href="/auth/login"
-          className="text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          Entrar
-        </Link>
-      </p>
     </div>
   );
 }
