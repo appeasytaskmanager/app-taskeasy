@@ -3,6 +3,7 @@ import { users } from "@/db/schema";
 import { compare } from "bcryptjs";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm"
+import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
     try {
@@ -45,6 +46,26 @@ export async function POST(req: Request) {
         );
     }
 
+    // Implementando segredo JWT
+
+    const JWT_SECRET = process.env.JWT_SECRET!;
+
+    if (passwordMatch) {
+        
+        if (!JWT_SECRET) {
+            throw new Error("JWT Não configurado");
+        }
+    }
+
+    // Gera o Token
+    const token = jwt.sign(
+        { userId: user.id, email: user.email }, //Payload com ID do user
+        JWT_SECRET,
+        { expiresIn: "1d"}
+    );
+
+    // Retorna o token e o usuário sem a senha
+
     const userWithoutPassword = { // Cria um objeto sem a senha
     id: user.id,
     name: user.name,
@@ -53,7 +74,11 @@ export async function POST(req: Request) {
     };
 
     return NextResponse.json(
-        { success: true, user: userWithoutPassword, message: "Login realizado com sucesso." },
+        { success: true,
+        user: userWithoutPassword,
+        token: token,
+        message: "Login realizado com sucesso."
+        },
         { status: 200 }
     );
 
