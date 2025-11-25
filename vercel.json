@@ -11,6 +11,5 @@
     "autoJobCancelation": true
   },
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "ignoreCommand": "bash scripts/should-build.sh"
+  "installCommand": "npm install"
 }
