@@ -26,10 +26,10 @@ export function Login() {
       <LogoEasyTask />
       <div className="flex flex-col gap-6 p-8 rounded-md shadow-xl w-[460px] bg-zinc-900 border border-zinc-800">
         <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-bold text-center text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-2xl font-bold  text-zinc-900 dark:text-zinc-100">
             Bem-vindo de volta!
           </h2>
-          <p className="text-sm text-center text-zinc-700 dark:text-zinc-300">
+          <p className="text-sm  text-zinc-700 dark:text-zinc-300">
             Faça login para continuar
           </p>
         </div>
@@ -89,7 +89,7 @@ export function Login() {
           </Button>
         </div>
 
-        <p className="text-sm text-center text-zinc-700 dark:text-zinc-300">
+        <p className="text-sm text-zinc-700 dark:text-zinc-300">
           Não tem conta?{" "}
           <Link
             href="/auth/register"
