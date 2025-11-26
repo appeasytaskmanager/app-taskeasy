@@ -3,4 +3,3 @@ export { db } from '@/lib/db';
 
 // Exportar todos os schemas
 export * from './schema';
-

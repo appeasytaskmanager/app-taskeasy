@@ -8,6 +8,7 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
+import { categories } from "./categories"
 
 // Enum para status da tarefa
 export const taskStatusEnum = pgEnum("task_status", [
@@ -17,14 +18,25 @@ export const taskStatusEnum = pgEnum("task_status", [
   "cancelled",
 ]);
 
+//novo enum para prioridade das tarefas
+
+export const taskPriorityEnum = pgEnum ("task_priority", [
+  "low",
+  "medium",
+  "high",
+]);
+
 export const tasks = pgTable("tasks", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   status: taskStatusEnum("status").default("pending").notNull(),
+  priority: taskPriorityEnum("priority").default("medium").notNull(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  categoryId: uuid("category_id")
+    .references(()=> categories.id, {onDelete: "set null"}),
   dueDate: timestamp("due_date"),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
