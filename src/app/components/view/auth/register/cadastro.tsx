@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/components/ui/button";
 import LogoEasyTask from "@/app/components/ui/logo";
-import { ArrowRightIcon } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -40,6 +40,8 @@ export function Cadastro() {
 
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function handleChange<K extends keyof FormState>(key: K, value: string) {
     setForm((s) => ({ ...s, [key]: value }));
@@ -192,13 +194,24 @@ export function Cadastro() {
           {/* Senha */}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-zinc-300">Senha</label>
-            <input
-              type="password"
-              placeholder="********"
-              value={form.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-              className="px-4 py-3 border rounded-md text-sm dark:bg-zinc-800 border-zinc-700 text-zinc-100"
-            />
+            <div className="flex items-center border rounded-md dark:bg-zinc-800 border-zinc-700">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="********"
+                value={form.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+                className="flex-1 px-4 py-3 text-sm bg-transparent text-zinc-100 placeholder-zinc-400 focus:outline-none rounded-l-md"
+              />
+
+              <button
+                type="button"
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setShowPassword((v) => !v)}
+                className="px-3 grid place-items-center text-zinc-400 hover:text-zinc-200"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             <p className="text-xs text-zinc-400">
               Mínimo 8 caracteres. Recomendado incluir letra maiúscula.
@@ -218,13 +231,25 @@ export function Cadastro() {
           {/* Confirmar senha */}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-zinc-300">Confirmar Senha</label>
-            <input
-              type="password"
-              placeholder="********"
-              value={form.confirmPassword}
-              onChange={(e) => handleChange("confirmPassword", e.target.value)}
-              className="px-4 py-3 border rounded-md text-sm dark:bg-zinc-800 border-zinc-700 text-zinc-100"
-            />
+            <div className="flex items-center border rounded-md dark:bg-zinc-800 border-zinc-700">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="********"
+                value={form.confirmPassword}
+                onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                className="flex-1 px-4 py-3 text-sm bg-transparent text-zinc-100 placeholder-zinc-400 focus:outline-none rounded-l-md"
+              />
+
+              <button
+                type="button"
+                aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setShowConfirmPassword((v) => !v)}
+                className="px-3 grid place-items-center text-zinc-400 hover:text-zinc-200"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
             {errors.confirmPassword && (
               <p className="text-xs text-red-500">{errors.confirmPassword}</p>
             )}
