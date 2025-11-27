@@ -4,6 +4,16 @@ Bem-vindo à documentação do **EasyTask Manager App**. Esta documentação for
 
 ## 📑 Índice da Documentação
 
+### 🎨 UI e Componentes
+
+- **[Dashboard Components](./docs/dashboard-components.md)**
+  - Componentes UI base (Button, Card, Input, Chart)
+  - Componentes do Dashboard (Sidebar, Header, Charts, Lists)
+  - Custom Hooks (useMobile)
+  - Padrões e boas práticas
+  - Exemplos de uso
+  - Temas e estilos (light/dark mode)
+
 ### 🗄️ Banco de Dados
 
 - **[Configuração do Neon Database](./docs//database-setup.md)**
@@ -29,7 +39,27 @@ Bem-vindo à documentação do **EasyTask Manager App**. Esta documentação for
 
 ## 🚀 Início Rápido
 
-### 1. Configurar Banco de Dados
+### 1. Configurar Ambiente
+
+```bash
+# Instalar dependências
+npm install
+
+# Configurar variáveis de ambiente
+cp .env.production.example .env.local
+# Preencher DATABASE_URL e JWT_SECRET
+```
+
+### 2. Visualizar Dashboard
+
+```bash
+# Iniciar servidor de desenvolvimento
+npm run dev
+
+# Abrir http://localhost:3000/dashboard
+```
+
+### 3. Configurar Banco de Dados
 
 Siga o guia [Configuração do Neon Database](./docs/database-setup.md) para:
 
@@ -38,7 +68,7 @@ Siga o guia [Configuração do Neon Database](./docs/database-setup.md) para:
 - Configurar variáveis de ambiente
 - Testar conexão
 
-### 2. Configurar Drizzle ORM
+### 4. Usar Drizzle ORM
 
 Siga o guia [Guia do Drizzle ORM](./docs/drizzle-setup.md) para:
 
@@ -79,6 +109,12 @@ Siga o guia [Guia do Drizzle ORM](./docs/drizzle-setup.md) para:
    - Queries com filtros
    - Queries com relações
    - Queries avançadas
+
+4. **[Construir UI com Componentes](./docs/dashboard-components.md)**
+   - Usar componentes UI base
+   - Criar páginas com Dashboard components
+   - Implementar custom hooks
+   - Trabalhar com temas
 
 ### Produção
 

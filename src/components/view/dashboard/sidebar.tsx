@@ -1,0 +1,93 @@
+"use client"
+
+import {
+  Home,
+  LayoutDashboard,
+  CheckSquare,
+  BarChart3,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import { cn } from "@/lib/utils"
+
+const navigation = [
+  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard", active: true },
+  { name: "Tarefas", icon: CheckSquare, href: "/tasks" },
+  { name: "Relatórios", icon: BarChart3, href: "/reports" },
+]
+
+export function Sidebar() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      {/* Mobile Toggle */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay para mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed md:static w-64 h-screen bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col z-40 transition-transform md:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center gap-2 px-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
+            T
+          </div>
+          <span className="font-semibold text-slate-900 dark:text-white">TaskEasy</span>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                item.active
+                  ? "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-medium"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              )}
+            >
+              <item.icon className="w-4 h-4" />
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-slate-200 dark:border-slate-800 px-3 py-3 space-y-1">
+          <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full">
+            <Settings className="w-4 h-4" />
+            Configurações
+          </button>
+          <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full">
+            <LogOut className="w-4 h-4" />
+            Sair
+          </button>
+        </div>
+      </aside>
+    </>
+  )
+}
