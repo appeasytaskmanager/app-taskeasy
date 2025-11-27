@@ -4,7 +4,7 @@ import {
   MetricCards,
   TasksChart,
   TasksList,
-} from "@/components/view/dashboard"
+} from "@/app/components/view/dashboard"
 
 export default function DashboardPage() {
   return (

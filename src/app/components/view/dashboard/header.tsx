@@ -1,5 +1,5 @@
 import { Search, Plus, Bell, User } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Input } from "@/app/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export function Header() {

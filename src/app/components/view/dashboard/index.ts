@@ -4,3 +4,5 @@ export { MetricCards } from "./metric-cards"
 export { TasksChart } from "./tasks-chart"
 export { TasksList } from "./tasks-list"
 export { ThemeProvider } from "./theme-provider"
+
+export default {}
