@@ -1,36 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useTasks, type Task } from "@/hooks/use-tasks"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { X } from "lucide-react"
+import { useTasks } from "@/hooks/use-tasks";
+import { useState } from "react";
+
+import { Input } from "@/app/components/ui/input";
+import { X } from "lucide-react";
+import { Button } from "../../ui/button";
 
 interface NewTaskModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
-  const { createTask } = useTasks()
-  const [loading, setLoading] = useState(false)
+  const { createTask } = useTasks();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<{
-    title: string
-    description: string
-    priority: "high" | "medium" | "low"
-    dueDate: string
+    title: string;
+    description: string;
+    priority: "high" | "medium" | "low";
+    dueDate: string;
   }>({
     title: "",
     description: "",
     priority: "medium",
     dueDate: "",
-  })
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.title.trim()) return
+    e.preventDefault();
+    if (!formData.title.trim()) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       await createTask({
         title: formData.title,
@@ -38,15 +39,20 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
         priority: formData.priority,
         status: "pending",
         dueDate: formData.dueDate || new Date().toISOString().split("T")[0],
-      })
-      setFormData({ title: "", description: "", priority: "medium", dueDate: "" })
-      onClose()
+      });
+      setFormData({
+        title: "",
+        description: "",
+        priority: "medium",
+        dueDate: "",
+      });
+      onClose();
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -151,5 +157,5 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
         </form>
       </div>
     </div>
-  )
+  );
 }

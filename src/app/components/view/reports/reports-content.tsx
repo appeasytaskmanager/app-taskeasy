@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useTasks } from "@/hooks/use-tasks"
+import { useState } from "react";
+import { useTasks } from "@/hooks/use-tasks";
 import {
   BarChart,
   Bar,
@@ -16,44 +16,52 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-} from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { Button } from "@/components/ui/button"
+} from "recharts";
+import { Button } from "../../ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../ui/card";
 
 export function ReportsContent() {
-  const { tasks } = useTasks()
-  const [selectedPeriod, setSelectedPeriod] = useState<"7" | "30">("7")
+  const { tasks } = useTasks();
+  const [selectedPeriod, setSelectedPeriod] = useState<"7" | "30">("7");
 
   // Variáveis base
-  const totalTasks = tasks.length
-  const completedTasks = tasks.filter((t) => t.status === "completed").length
-  const inProgressTasks = tasks.filter((t) => t.status === "in_progress").length
-  const pendingTasks = tasks.filter((t) => t.status === "pending").length
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === "completed").length;
+  const inProgressTasks = tasks.filter(
+    (t) => t.status === "in_progress"
+  ).length;
+  const pendingTasks = tasks.filter((t) => t.status === "pending").length;
 
   // Função para gerar dados de produtividade
   const generateProductivityData = (days: number) => {
-    const data = []
-    const dayNames = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"]
-    
+    const data = [];
+    const dayNames = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
+
     for (let i = 0; i < days; i++) {
-      const dayIndex = i % 7
+      const dayIndex = i % 7;
       data.push({
         day: days === 7 ? dayNames[dayIndex] : String(i + 1).padStart(2, "0"),
         tarefas: Math.floor(Math.random() * 8) + 2,
         concluidas: Math.floor(Math.random() * 6) + 1,
-      })
+      });
     }
-    return data
-  }
+    return data;
+  };
 
   // Calcular estatísticas com variação por período
   const getStatsByPeriod = () => {
-    const multiplier = selectedPeriod === "30" ? 1.8 : 1
-    const total = Math.round(totalTasks * multiplier) || 0
-    const completed = Math.round(completedTasks * multiplier) || 0
-    const inProgress = Math.round(inProgressTasks * multiplier) || 0
-    const pending = Math.round(pendingTasks * multiplier) || 0
-    
+    const multiplier = selectedPeriod === "30" ? 1.8 : 1;
+    const total = Math.round(totalTasks * multiplier) || 0;
+    const completed = Math.round(completedTasks * multiplier) || 0;
+    const inProgress = Math.round(inProgressTasks * multiplier) || 0;
+    const pending = Math.round(pendingTasks * multiplier) || 0;
+
     return {
       total,
       completed,
@@ -61,50 +69,70 @@ export function ReportsContent() {
       pending,
       completionRate: total > 0 ? ((completed / total) * 100).toFixed(1) : "0",
       inProgressRate: total > 0 ? ((inProgress / total) * 100).toFixed(1) : "0",
-    }
-  }
+    };
+  };
 
-  const stats = getStatsByPeriod()
+  const stats = getStatsByPeriod();
 
   // Dados para gráfico de pizza (Status)
   const statusData = [
     { name: "Concluídas", value: stats.completed, color: "#22c55e" },
     { name: "Em Progresso", value: stats.inProgress, color: "#3b82f6" },
     { name: "Pendentes", value: stats.pending, color: "#eab308" },
-  ].filter((item) => item.value > 0)
+  ].filter((item) => item.value > 0);
 
   // Dados para gráfico de prioridade com variação por período
   const getPriorityDataByPeriod = () => {
-    const multiplier = selectedPeriod === "30" ? 1.5 : 1
+    const multiplier = selectedPeriod === "30" ? 1.5 : 1;
     return [
       {
         name: "Alta",
-        count: Math.round(tasks.filter((t) => t.priority === "high").length * multiplier) || 0,
-        completed: Math.round(
-          tasks.filter((t) => t.priority === "high" && t.status === "completed").length * multiplier
-        ) || 0,
+        count:
+          Math.round(
+            tasks.filter((t) => t.priority === "high").length * multiplier
+          ) || 0,
+        completed:
+          Math.round(
+            tasks.filter(
+              (t) => t.priority === "high" && t.status === "completed"
+            ).length * multiplier
+          ) || 0,
       },
       {
         name: "Média",
-        count: Math.round(tasks.filter((t) => t.priority === "medium").length * multiplier) || 0,
-        completed: Math.round(
-          tasks.filter((t) => t.priority === "medium" && t.status === "completed").length * multiplier
-        ) || 0,
+        count:
+          Math.round(
+            tasks.filter((t) => t.priority === "medium").length * multiplier
+          ) || 0,
+        completed:
+          Math.round(
+            tasks.filter(
+              (t) => t.priority === "medium" && t.status === "completed"
+            ).length * multiplier
+          ) || 0,
       },
       {
         name: "Baixa",
-        count: Math.round(tasks.filter((t) => t.priority === "low").length * multiplier) || 0,
-        completed: Math.round(
-          tasks.filter((t) => t.priority === "low" && t.status === "completed").length * multiplier
-        ) || 0,
+        count:
+          Math.round(
+            tasks.filter((t) => t.priority === "low").length * multiplier
+          ) || 0,
+        completed:
+          Math.round(
+            tasks.filter(
+              (t) => t.priority === "low" && t.status === "completed"
+            ).length * multiplier
+          ) || 0,
       },
-    ]
-  }
+    ];
+  };
 
-  const priorityData = getPriorityDataByPeriod()
+  const priorityData = getPriorityDataByPeriod();
 
   // Dados para gráfico de produtividade dinâmicos
-  const productivityData = generateProductivityData(selectedPeriod === "7" ? 7 : 30)
+  const productivityData = generateProductivityData(
+    selectedPeriod === "7" ? 7 : 30
+  );
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -357,5 +385,5 @@ export function ReportsContent() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

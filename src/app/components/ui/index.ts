@@ -1,5 +1,5 @@
-export { Button } from "../../../components/ui/button"
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "../../../components/ui/card"
+export { Button } from "./button"
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./card"
 export { Input } from "./input"
 export { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart"
 export { Separator } from "./separator"

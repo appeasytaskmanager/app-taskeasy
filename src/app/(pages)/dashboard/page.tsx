@@ -4,7 +4,7 @@ import {
   MetricCards,
   TasksChart,
   TasksList,
-} from "@/app/components/view/dashboard"
+} from "@/app/components/view/dashboard";
 
 export default function DashboardPage() {
   return (
@@ -22,7 +22,8 @@ export default function DashboardPage() {
           <div className="p-4 md:p-6 space-y-6">
             {/* Metrics Grid */}
             <MetricCards />
-
+            {/* Tasks Table */}
+            <TasksList />
             {/* Charts and Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Chart */}
@@ -82,12 +83,9 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-
-            {/* Tasks Table */}
-            <TasksList />
           </div>
         </main>
       </div>
     </div>
-  )
+  );
 }

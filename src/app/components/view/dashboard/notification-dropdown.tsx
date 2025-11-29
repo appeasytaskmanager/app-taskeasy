@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Bell, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Bell, X } from "lucide-react";
+import { Button } from "../../ui/button";
 
 interface Notification {
-  id: number
-  title: string
-  message: string
-  timestamp: string
-  read: boolean
+  id: number;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
 }
 
 export function NotificationDropdown() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: 1,
@@ -36,19 +36,19 @@ export function NotificationDropdown() {
       timestamp: "há 2 horas",
       read: true,
     },
-  ])
+  ]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: number) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
-  }
+    );
+  };
 
   const removeNotification = (id: number) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   return (
     <div className="relative">
@@ -82,9 +82,7 @@ export function NotificationDropdown() {
                 <div
                   key={notification.id}
                   className={`p-4 border-b border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
-                    !notification.read
-                      ? "bg-blue-50 dark:bg-blue-950"
-                      : ""
+                    !notification.read ? "bg-blue-50 dark:bg-blue-950" : ""
                   }`}
                   onClick={() => markAsRead(notification.id)}
                 >
@@ -102,8 +100,8 @@ export function NotificationDropdown() {
                     </div>
                     <button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        removeNotification(notification.id)
+                        e.stopPropagation();
+                        removeNotification(notification.id);
                       }}
                       className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     >
@@ -127,11 +125,8 @@ export function NotificationDropdown() {
       )}
 
       {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
       )}
     </div>
-  )
+  );
 }

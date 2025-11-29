@@ -1,46 +1,47 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Search, Plus, Bell } from "lucide-react"
-import { Input } from "@/app/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { NotificationDropdown } from "./notification-dropdown"
-import { UserMenu } from "./user-menu"
-import { NewTaskModal } from "./new-task-modal"
-import { useTasks } from "@/hooks/use-tasks"
+import { Input } from "@/app/components/ui/input";
+import { Plus, Search } from "lucide-react";
+import { useState } from "react";
+
+import { useTasks } from "@/hooks/use-tasks";
+import { NewTaskModal } from "./new-task-modal";
+import { NotificationDropdown } from "./notification-dropdown";
+import { UserMenu } from "./user-menu";
+import { Button } from "../../ui/button";
 
 export function Header() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const { searchTasks } = useTasks()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { searchTasks } = useTasks();
 
-  const filteredTasks = searchQuery.trim() ? searchTasks(searchQuery) : []
+  const filteredTasks = searchQuery.trim() ? searchTasks(searchQuery) : [];
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Search functionality can be integrated with tasks context
-    console.log("Buscar:", searchQuery)
-  }
+    console.log("Buscar:", searchQuery);
+  };
 
   const handleTaskClick = (taskTitle: string) => {
-    setSearchQuery(taskTitle)
-    setIsSearchFocused(false)
-  }
+    setSearchQuery(taskTitle);
+    setIsSearchFocused(false);
+  };
 
   const clearSearch = () => {
-    setSearchQuery("")
-    setIsSearchFocused(false)
-  }
+    setSearchQuery("");
+    setIsSearchFocused(false);
+  };
 
   return (
     <>
       <header className="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-slate-950">
         <div className="flex items-center gap-4 flex-1 max-w-2xl">
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white hidden md:block">
-            Minhas Tarefas
-          </h1>
-          <form onSubmit={handleSearch} className="relative flex-1 hidden md:block w-full">
+          <form
+            onSubmit={handleSearch}
+            className="relative flex-1 hidden md:block w-full"
+          >
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="search"
@@ -113,13 +114,15 @@ export function Header() {
             )}
 
             {/* Mensagem quando não há resultados */}
-            {isSearchFocused && searchQuery.trim() && filteredTasks.length === 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50 p-3">
-                <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
-                  Nenhuma tarefa encontrada para "{searchQuery}"
-                </p>
-              </div>
-            )}
+            {isSearchFocused &&
+              searchQuery.trim() &&
+              filteredTasks.length === 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50 p-3">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
+                    Nenhuma tarefa encontrada para "{searchQuery}"
+                  </p>
+                </div>
+              )}
 
             {/* Overlay para fechar dropdown */}
             {isSearchFocused && (
@@ -134,18 +137,21 @@ export function Header() {
         <div className="flex items-center gap-2 md:gap-4">
           <NotificationDropdown />
           <UserMenu />
-          <Button
+          {/* <Button
             onClick={() => setIsModalOpen(true)}
             size="sm"
             className="gap-2 hidden sm:flex"
           >
             <Plus className="w-4 h-4" />
             Nova Tarefa
-          </Button>
+          </Button> */}
         </div>
       </header>
 
-      <NewTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <NewTaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
-  )
+  );
 }

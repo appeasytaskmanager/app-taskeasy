@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-
+import { useState } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../ui/card";
+import { Button } from "../../ui/button";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../ui";
 
 const chartData7Days = [
   { date: "Seg", tarefas: 4, concluídas: 2 },
@@ -19,7 +20,7 @@ const chartData7Days = [
   { date: "Sex", tarefas: 7, concluídas: 5 },
   { date: "Sab", tarefas: 3, concluídas: 2 },
   { date: "Dom", tarefas: 4, concluídas: 3 },
-]
+];
 
 const chartData30Days = [
   { date: "01", tarefas: 2, concluídas: 1 },
@@ -42,7 +43,7 @@ const chartData30Days = [
   { date: "18", tarefas: 8, concluídas: 6 },
   { date: "19", tarefas: 3, concluídas: 2 },
   { date: "20", tarefas: 6, concluídas: 4 },
-]
+];
 
 const chartConfig = {
   tarefas: {
@@ -53,11 +54,11 @@ const chartConfig = {
     label: "Concluídas",
     color: "hsl(142, 76%, 36%)",
   },
-}
+};
 
 export function TasksChart() {
-  const [period, setPeriod] = useState<"7" | "30">("7")
-  const chartData = period === "7" ? chartData7Days : chartData30Days
+  const [period, setPeriod] = useState<"7" | "30">("7");
+  const chartData = period === "7" ? chartData7Days : chartData30Days;
 
   return (
     <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
@@ -101,15 +102,34 @@ export function TasksChart() {
       </CardHeader>
       <CardContent className="overflow-hidden">
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <AreaChart
+            data={chartData}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="fillTarefas" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(220, 90%, 56%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(220, 90%, 56%)" stopOpacity={0} />
+                <stop
+                  offset="5%"
+                  stopColor="hsl(220, 90%, 56%)"
+                  stopOpacity={0.3}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="hsl(220, 90%, 56%)"
+                  stopOpacity={0}
+                />
               </linearGradient>
               <linearGradient id="fillConcluidas" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                <stop
+                  offset="5%"
+                  stopColor="hsl(142, 76%, 36%)"
+                  stopOpacity={0.3}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="hsl(142, 76%, 36%)"
+                  stopOpacity={0}
+                />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -153,5 +173,5 @@ export function TasksChart() {
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

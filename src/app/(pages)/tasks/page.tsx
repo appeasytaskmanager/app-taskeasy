@@ -1,8 +1,5 @@
-import {
-  Sidebar,
-  Header,
-} from "@/app/components/view/dashboard"
-import { TasksPageContent } from "@/app/components/view/tasks"
+import { Sidebar, Header } from "@/app/components/view/dashboard";
+import { TasksPageContent } from "@/app/components/view/tasks/tasks-page-content";
 
 export default function TasksPage() {
   return (
@@ -21,5 +18,5 @@ export default function TasksPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }

@@ -1,25 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { User, LogOut, Settings, CreditCard } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/hooks/use-auth"
+import { useState } from "react";
+import { User, LogOut, Settings, CreditCard } from "lucide-react";
+
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "../../ui/button";
 
 export function UserMenu() {
-  const [isOpen, setIsOpen] = useState(false)
-  const { user, logout, navigateTo } = useAuth()
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, logout, navigateTo } = useAuth();
 
-  if (!user) return null
+  if (!user) return null;
 
   const handleLogout = () => {
-    logout()
-    setIsOpen(false)
-  }
+    logout();
+    setIsOpen(false);
+  };
 
   const handleNavigate = (path: string) => {
-    navigateTo(path)
-    setIsOpen(false)
-  }
+    navigateTo(path);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative">
@@ -80,11 +81,8 @@ export function UserMenu() {
       )}
 
       {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
       )}
     </div>
-  )
+  );
 }
