@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useTasks, type Task } from "@/hooks/use-tasks"
+import { useTasks, type Task } from "./tasks-provider-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { X } from "lucide-react"

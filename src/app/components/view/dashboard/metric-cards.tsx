@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useState } from "react"
 import { TrendingUp, TrendingDown } from "lucide-react"
-import { useTasks } from "@/hooks/use-tasks"
+import { useTasks } from "./tasks-provider-client"
 
 export function MetricCards() {
   const { tasks } = useTasks()

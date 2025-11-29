@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus, Settings } from "lucide-react"
-import { useTasks } from "@/hooks/use-tasks"
+import { useTasks } from "./tasks-provider-client"
 import Link from "next/link"
 
 export function TasksList() {

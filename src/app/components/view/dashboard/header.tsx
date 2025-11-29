@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "./notification-dropdown"
 import { UserMenu } from "./user-menu"
 import { NewTaskModal } from "./new-task-modal"
-import { useTasks } from "@/hooks/use-tasks"
+import { useTasks } from "@/app/components/view/dashboard/tasks-provider-client"
 
 export function Header() {
   const [isModalOpen, setIsModalOpen] = useState(false)
