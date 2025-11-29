@@ -10,6 +10,10 @@ import {
   Menu,
   X,
   User as UserIcon,
+  Bell,
+  Moon,
+  Lock,
+  ChevronRight,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
@@ -26,6 +30,7 @@ const navigation = [
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const { user } = useAuth()
@@ -131,14 +136,55 @@ export function Sidebar() {
             )}
           </div>
 
-          {/* Configurações */}
-          <button
-            onClick={handleSettings}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full"
-          >
-            <Settings className="w-4 h-4" />
-            Configurações
-          </button>
+          {/* Configurações com submenu */}
+          <div className="relative">
+            <button
+              onClick={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
+              className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="w-4 h-4" />
+                Configurações
+              </div>
+              <ChevronRight className={`w-4 h-4 transition-transform ${isSettingsMenuOpen ? "rotate-90" : ""}`} />
+            </button>
+
+            {/* Submenu de Configurações */}
+            {isSettingsMenuOpen && (
+              <div className="mt-1 ml-3 pl-3 border-l border-slate-200 dark:border-slate-700 py-2 space-y-1">
+                <button
+                  onClick={() => {
+                    router.push("/settings/notifications")
+                    setIsOpen(false)
+                  }}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full text-left"
+                >
+                  <Bell className="w-3 h-3" />
+                  Notificações
+                </button>
+                <button
+                  onClick={() => {
+                    router.push("/settings/appearance")
+                    setIsOpen(false)
+                  }}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full text-left"
+                >
+                  <Moon className="w-3 h-3" />
+                  Aparência
+                </button>
+                <button
+                  onClick={() => {
+                    router.push("/settings/security")
+                    setIsOpen(false)
+                  }}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full text-left"
+                >
+                  <Lock className="w-3 h-3" />
+                  Segurança
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Sair */}
           <button

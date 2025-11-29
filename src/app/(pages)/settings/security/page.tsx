@@ -2,9 +2,9 @@ import {
   Sidebar,
   Header,
 } from "@/app/components/view/dashboard"
-import { TasksPageContent } from "@/app/components/view/tasks/tasks-page-content"
+import { SecuritySettings } from "@/app/components/view/settings/security-settings"
 
-export default function TasksPage() {
+export default function SecurityPage() {
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
       {/* Sidebar */}
@@ -17,7 +17,7 @@ export default function TasksPage() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto">
-          <TasksPageContent />
+          <SecuritySettings />
         </main>
       </div>
     </div>

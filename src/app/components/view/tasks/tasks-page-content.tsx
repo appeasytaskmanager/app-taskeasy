@@ -103,56 +103,25 @@ export function TasksPageContent() {
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Minhas Tarefas
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">
-            Total de {tasks.length} tarefa{tasks.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <Plus className="w-4 h-4" />
-          Nova Tarefa
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          Minhas Tarefas
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">
+          Total de {tasks.length} tarefa{tasks.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* Tarefas Recentes */}
       <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <CardTitle className="text-slate-900 dark:text-white">
-                Tarefas Recentes
-              </CardTitle>
-              <CardDescription className="text-slate-500 dark:text-slate-400">
-                Suas 5 primeiras tarefas
-              </CardDescription>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "date" | "priority")}
-                className="px-3 py-1 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-pointer"
-              >
-                <option value="date">Por Data</option>
-                <option value="priority">Por Prioridade</option>
-              </select>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="px-3 py-1 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-pointer"
-              >
-                <option value="all">Todos</option>
-                <option value="pending">Pendentes</option>
-                <option value="in_progress">Em Progresso</option>
-                <option value="completed">Concluídas</option>
-              </select>
-            </div>
+          <div>
+            <CardTitle className="text-slate-900 dark:text-white">
+              Tarefas Recentes
+            </CardTitle>
+            <CardDescription className="text-slate-500 dark:text-slate-400">
+              Suas 5 primeiras tarefas
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -219,13 +188,6 @@ export function TasksPageContent() {
               <p className="text-slate-600 dark:text-slate-400 mb-4">
                 Nenhuma tarefa encontrada
               </p>
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="w-4 h-4" />
-                Criar Primeira Tarefa
-              </Button>
             </div>
           )}
         </CardContent>

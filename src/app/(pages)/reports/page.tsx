@@ -1,6 +1,6 @@
 import {
   Sidebar,
-  Header,
+  ReportsHeader,
 } from "@/app/components/view/dashboard"
 import { ReportsContent } from "@/app/components/view/reports"
 
@@ -13,7 +13,7 @@ export default function ReportsPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
         {/* Header */}
-        <Header />
+        <ReportsHeader />
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto">

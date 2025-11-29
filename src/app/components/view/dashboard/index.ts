@@ -1,5 +1,6 @@
 export { Sidebar } from "./sidebar"
 export { Header } from "./header"
+export { ReportsHeader } from "./reports-header"
 export { MetricCards } from "./metric-cards"
 export { TasksChart } from "./tasks-chart"
 export { TasksList } from "./tasks-list"

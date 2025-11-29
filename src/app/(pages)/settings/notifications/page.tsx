@@ -2,9 +2,9 @@ import {
   Sidebar,
   Header,
 } from "@/app/components/view/dashboard"
-import { TasksPageContent } from "@/app/components/view/tasks/tasks-page-content"
+import { NotificationsSettings } from "@/app/components/view/settings/notifications-settings"
 
-export default function TasksPage() {
+export default function NotificationsPage() {
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
       {/* Sidebar */}
@@ -17,7 +17,7 @@ export default function TasksPage() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto">
-          <TasksPageContent />
+          <NotificationsSettings />
         </main>
       </div>
     </div>
