@@ -3,6 +3,8 @@ import { TaskService } from "./task.service";
 import { NewTask } from '../db/schema/tasks';
 import next from "next";
 import { mock } from "node:test";
+import { authMiddleware } from "@/lib/auth";
+import { NextRequest } from "next/server";
 
 const taskService = new TaskService();
 
@@ -12,6 +14,15 @@ export class TaskControlleer {
     //post = /api/tasks (create)
 
     async create (req: Request){
+
+        const authResult = authMiddleware(req as NextRequest);
+
+        if (authResult.response) {
+            return authResult.response; //erro 401 unauthorized 
+        }
+
+        const userId = authResult.userId as string; // userId é garantido
+
         try {
             const data: NewTask = await req.json();
             const userId = MOCK_USER_ID; //aqui é a lógica de autenticação
