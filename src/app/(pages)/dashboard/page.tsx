@@ -1,10 +1,8 @@
-import {
-  Sidebar,
-  Header,
-  MetricCards,
-  TasksChart,
-  TasksList,
-} from "@/app/components/view/dashboard";
+import { Sidebar, TasksChart } from "@/app/components/view/dashboard";
+import { TasksProviderClient } from "@/app/components/view/dashboard/tasks-provider-client";
+import { Header } from "@/app/components/view/dashboard/header";
+import { MetricCards } from "@/app/components/view/dashboard/metric-cards";
+import { TasksList } from "@/app/components/view/dashboard/tasks-list";
 
 export default function DashboardPage() {
   return (
@@ -13,9 +11,10 @@ export default function DashboardPage() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
-        {/* Header */}
-        <Header />
+      <TasksProviderClient>
+        <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
+          {/* Header */}
+          <Header />
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto">
@@ -85,7 +84,8 @@ export default function DashboardPage() {
             </div>
           </div>
         </main>
-      </div>
+        </div>
+      </TasksProviderClient>
     </div>
   );
 }

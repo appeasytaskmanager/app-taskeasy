@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks } from "./tasks-provider-client";
 import Link from "next/link";
 import { Button } from "../../ui/button";
 

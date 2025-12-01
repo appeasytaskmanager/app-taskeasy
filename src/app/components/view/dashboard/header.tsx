@@ -4,7 +4,7 @@ import { Input } from "@/app/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { useState } from "react";
 
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks } from "./tasks-provider-client";
 import { NewTaskModal } from "./new-task-modal";
 import { NotificationDropdown } from "./notification-dropdown";
 import { UserMenu } from "./user-menu";
