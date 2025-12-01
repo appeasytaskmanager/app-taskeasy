@@ -1,6 +1,6 @@
 import { TaskRepository } from "./task.repository";
-import { NewTask, Task} from "../db/schema/tasks";
-import { tasks } from "../db/schema";
+import { NewTask, Task} from "../../db/schema/tasks";
+import { tasks } from "../../db/schema";
 
 export type UpdateTaskData = Partial<typeof tasks.$inferSelect>;
 

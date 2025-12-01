@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest  } from "next/server";
 import { TaskService } from "./task.service";
-import { NewTask } from '../db/schema/tasks';
+import { NewTask } from '../../db/schema/tasks';
 import { authMiddleware } from "@/lib/auth";
-import { NextRequest } from "next/server";
 
 const taskService = new TaskService();
 

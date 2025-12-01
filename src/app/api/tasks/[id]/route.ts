@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { TaskControlleer } from "@/modules/task.controller";
+import { TaskControlleer } from "@/modules/tasks/task.controller";
 
 const taskController = new TaskControlleer();
 

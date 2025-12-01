@@ -5,6 +5,7 @@ import {
     timestamp,
 } from "drizzle-orm/pg-core"
 import { updateTag } from "next/cache"
+import { users } from "./users"; 
 
 //exportando a tabela
 export const categories = pgTable("categories", {
@@ -13,9 +14,13 @@ export const categories = pgTable("categories", {
     // nome da categoria
     name: varchar("name", {length: 255}).notNull().unique(), //nome obrigatório
 
+    userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, {onDelete: "cascade"}),
+
     //campos de controle criação e atualização:
     createdAt: timestamp("created_at").defaultNow().notNull(),
-    updateAt: timestamp("update_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export type Category = typeof categories.$inferSelect;

@@ -1,8 +1,8 @@
 import { promises } from "dns";
-import { db } from "../db";
-import { tasks , NewTask, Task } from "../db/schema/tasks";
+import { db } from "../../db";
+import { tasks , NewTask, Task } from "../../db/schema/tasks";
 import { eq, and, asc } from "drizzle-orm";
-import { TaskFilters } from "@/modules/task.service"
+import { TaskFilters } from "@/modules/tasks/task.service"
 
 //Esse arquivo comunica com o database
 
