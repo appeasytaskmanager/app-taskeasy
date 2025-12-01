@@ -2,7 +2,7 @@ import { promises } from "dns";
 import { db } from "../db";
 import { tasks , NewTask, Task } from "../db/schema/tasks";
 import { eq, and, asc } from "drizzle-orm";
-
+import { TaskFilters } from "@/modules/task.service"
 
 //Esse arquivo comunica com o database
 
@@ -26,17 +26,38 @@ export class TaskRepository {
     // Garante que o user só acessa as suas tarefas
 
     async findByIdAndUser(id: string, userId: string): Promise<Task | undefined> {
+
         return await db.select().from(tasks) //isso é = SELECT * FROM tasks
-        .where(and(eq(tasks. id, id), eq(tasks.userId, userId))) // aqui é a linha que compara os IDs
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId))) // aqui é a linha que compara os IDs
         .limit(1)
         .execute()
         .then(rows => rows[0]);
     }
 
-    async listByUser(userId: string,  _filters?: unknown /* ajustar tipo de filtro depois */): Promise<Task[]> {
+    async listByUser(userId: string,  filters?: TaskFilters): Promise<Task[]> {
+
+        const conditions = [eq(tasks.userId, userId)];
+
+        //Filtragem por status
+        if (filters?.status) {
+            conditions.push(eq(tasks.status, filters.status));           
+        }
+
+        //Filtragem por prioridade
+        if (filters?.priority) {
+            conditions.push(eq(tasks.priority, filters.priority));
+        }
+
+        //Filtragem por categoria 
+
+        if (filters?.categoryId) {
+            conditions.push(eq(tasks.categoryId, filters.categoryId));
+        }
+
         //Lógica de filtragem
-        return await db.select().from(tasks)
-        .where(eq(tasks.userId, userId))
+        return await db.select()
+        .from(tasks)
+        .where(and(...conditions))
         .orderBy(asc(tasks.createdAt)) //ordena por criação
         .execute();
     }

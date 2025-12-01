@@ -16,5 +16,5 @@ export async function GET(request: NextRequest) {
 
     //o controller espera o objeto da request e o params
 
-    return taskController.listByUser(searchParams);
+    return taskController.listByUser(request, searchParams);
 }

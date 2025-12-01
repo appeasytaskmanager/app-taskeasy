@@ -4,6 +4,12 @@ import { tasks } from "../db/schema";
 
 export type UpdateTaskData = Partial<typeof tasks.$inferSelect>;
 
+export type TaskFilters = {
+    status?: Task["status"];
+    priority?: Task["priority"];
+    categoryId?: string;
+};
+
 
 //Esse aquivo comunica com o repository
 
@@ -34,10 +40,10 @@ export class TaskService {
         return task;
     }
 
-    async listTasksByUser(userId: string, _filters?: unknown): Promise<Task[]> {
+    async listTasksByUser(userId: string, filters?: TaskFilters): Promise<Task[]> {
         //Processamento de filtros
         //Transforma em objetos para o repository utilizar  
-        return await taskRepository.listByUser(userId, _filters);
+        return await taskRepository.listByUser(userId, filters);
     }
 
     async updateTask(id: string, userId: string, data: UpdateTaskData): Promise<Task> {
