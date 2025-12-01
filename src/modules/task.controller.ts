@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
 import { TaskService } from "./task.service";
 import { NewTask } from '../db/schema/tasks';
-import next from "next";
-import { mock } from "node:test";
+import { authMiddleware } from "@/lib/auth";
+import { NextRequest } from "next/server";
 
 const taskService = new TaskService();
-
-const MOCK_USER_ID = ''; //Ver como vai ficar essa parte
 
 export class TaskControlleer {
     //post = /api/tasks (create)
 
     async create (req: Request){
+
+        const authResult = authMiddleware(req as NextRequest);
+
+        if (authResult.response) {
+            return authResult.response; //erro 401 unauthorized 
+        }
+
+        const userId = authResult.userId as string; // userId é garantido
+
         try {
             const data: NewTask = await req.json();
-            const userId = MOCK_USER_ID; //aqui é a lógica de autenticação
 
             //formata os dados e chama o service
             const newTask = await taskService.createTask({...data, userId }, userId);
@@ -29,10 +35,17 @@ export class TaskControlleer {
         }
     }
 
-    async getById(id: string) {
+    async getById(req: Request, id: string) {
         // GET /api/tasks/[id] -> busca pelo ID
         // o ID seria passado como parâmetro da rota Next.js (params)
-        const userId = MOCK_USER_ID;
+        
+        const authResult = authMiddleware(req as NextRequest);
+        
+        if (authResult.response) {
+            return authResult.response 
+        } 
+
+        const userId = authResult.userId as string;
 
         try {
             const task = await taskService.getTaskById(id, userId);
@@ -48,10 +61,17 @@ export class TaskControlleer {
         return NextResponse.json({ error: "erro interno do servidor."}, {status: 500});
     }
 
-    async listByUser (searchParams: URLSearchParams) {
+    async listByUser (req: Request, searchParams: URLSearchParams) {
         //GET /api/tasks (Listagem)
         //Nota: os filtros vão variar conforme os parametros de busca (searchParams)
-        const userId = MOCK_USER_ID;
+        
+        const authResult = authMiddleware(req as NextRequest);
+
+        if (authResult.response){
+            return authResult.response; // Retorna 401 Unauthorized
+        }
+
+        const userId = authResult.userId as string;
 
         //transforma os paramtetros de URL em um objeto de filtro simples
 
@@ -59,7 +79,19 @@ export class TaskControlleer {
 
         try { 
             const tasks = await taskService.listTasksByUser(userId, filters);
-            return NextResponse.json(tasks, {status: 200});
+
+            if (tasks.length === 0) {
+                return NextResponse.json(
+                    {
+                    message: "Nenhuma tarefa encontrada com esses filtros",
+                    tasks: []
+                    }, 
+                    {status: 200}
+                );
+            }
+            
+            return NextResponse.json(tasks, { status: 200 });
+
         } catch (error: unknown) {
             if (error instanceof Error) {
                 return NextResponse.json({ error: "Erro ao listar tarefas."}, {status: 500});
@@ -69,13 +101,21 @@ export class TaskControlleer {
 
     async update (req: Request, id: string) {
         // PUT/PATCH /api/tasks/[id] -> atualização 
-        const userId = MOCK_USER_ID;
+        
+        const authResult = authMiddleware(req as NextRequest);
+
+        if (authResult.response){
+            return authResult.response; // 401 Unauthorize
+        }
+
+        const userId = authResult.userId as string;
+
         const data = await req.json();
 
         try {
             const updateTask = await taskService.updateTask(id, userId, data);
 
-            return NextResponse.json(updateTask, { status: 500});
+            return NextResponse.json(updateTask, { status: 200});
 
         } catch (error: unknown) {
             if (error instanceof Error) { 
@@ -86,9 +126,16 @@ export class TaskControlleer {
         }
     }
 
-    async delete(id: string) {
+    async delete(req: Request, id: string) {
         // delete -> /api/tasks/[id] (deletar)
-        const userId = MOCK_USER_ID;
+        
+        const authResult = authMiddleware(req as NextRequest);
+
+        if (authResult.response) {
+            return authResult.response; // 401 ou unauthorized
+        }
+
+        const userId = authResult.userId as string;
 
         try {
             await taskService.deleteTask(id, userId);

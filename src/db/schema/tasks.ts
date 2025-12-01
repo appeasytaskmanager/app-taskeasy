@@ -36,7 +36,6 @@ export const tasks = pgTable("tasks", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   categoryId: uuid("category_id")
-    .notNull() //Categoria deve ser obrigatória
     .references(()=> categories.id, {onDelete: "set null"}), //.references() é o método que define as FK
   dueDate: timestamp("due_date"),
   completedAt: timestamp("completed_at"),
