@@ -141,7 +141,7 @@ export function TasksPageContent() {
                   className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Plus className="w-4 h-4" />
-                  Criar Primeira Tarefa
+                  Criar Tarefa
                 </Button>
               </div>
               {sortedTasks.length > 5 && (

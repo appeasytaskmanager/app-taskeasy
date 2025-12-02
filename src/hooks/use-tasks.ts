@@ -92,13 +92,13 @@ export function useTasks(): UseTasksReturn {
         // Fallback: criar localmente
         const newTask: Task = {
           ...task,
-          id: Math.max(...tasks.map((t) => t.id), 0) + 1,
+          id: Date.now(), // Usar timestamp para gerar ID único
         };
         setTasks((prev) => [...prev, newTask]);
         return newTask;
       }
     },
-    [tasks]
+    []
   );
 
   // Update a task
