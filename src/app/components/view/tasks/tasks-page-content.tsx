@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Plus, Eye, EyeOff } from "lucide-react";
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks, Task } from "@/hooks/use-tasks";
 
-import { NewTaskModal } from "@/app/components/view/dashboard";
+import { NewTaskModal, EditTaskModal, TaskRowActions } from "@/app/components/view/dashboard";
 import Link from "next/link";
 import { Button } from "../../ui/button";
 import {
@@ -18,6 +18,8 @@ import {
 export function TasksPageContent() {
   const { tasks, loading, updateTask, deleteTask } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "priority">("date");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "completed" | "in_progress" | "pending"
@@ -82,6 +84,15 @@ export function TasksPageContent() {
     status: "completed" | "in_progress" | "pending"
   ) => {
     await updateTask(id, { status });
+  };
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    await deleteTask(taskId);
   };
 
   if (loading) {
@@ -163,6 +174,9 @@ export function TasksPageContent() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                         Vencimento
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -217,6 +231,13 @@ export function TasksPageContent() {
                             {new Date(task.dueDate).toLocaleDateString("pt-BR")}
                           </p>
                         </td>
+                        <td className="px-6 py-4">
+                          <TaskRowActions
+                            task={task}
+                            onEdit={handleEditTask}
+                            onDelete={handleDeleteTask}
+                          />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -233,6 +254,14 @@ export function TasksPageContent() {
       <NewTaskModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+      <EditTaskModal
+        isOpen={isEditModalOpen}
+        task={selectedTask}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedTask(null);
+        }}
       />
     </>
   );
