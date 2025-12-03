@@ -105,12 +105,6 @@ export function Login() {
               }}
               className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
             />
-            <Link
-              href="/auth/forgot-password"
-              className="text-xs text-right mt-2 hover:text-zinc-900 dark:text-zinc-300 hover:dark:text-zinc-100 hover:underline"
-            >
-              Esqueceu sua senha?
-            </Link>
           </div>
 
           {/* Mensagem de erro */}
