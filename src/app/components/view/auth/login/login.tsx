@@ -2,23 +2,49 @@
 
 import { Button } from "@/app/components/ui/button";
 import LogoEasyTask from "@/app/components/ui/logo";
-import { ArrowRightIcon, CalendarRange } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-  function handleLogin() {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    
     if (!email || !senha) {
       setErro("É necessário preencher todos os campos.");
       return;
     }
 
     setErro("");
-    alert(`Login realizado com: ${email}`);
+    setLoading(true);
+
+    try {
+      await login(email, senha);
+      // O redirecionamento é feito automaticamente pelo AuthContext
+    } catch (error: any) {
+      // Extrai a mensagem de erro silenciosamente (sem logar no console)
+      let errorMessage = "Erro ao fazer login. Tente novamente.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      // Exibe apenas a mensagem amigável abaixo dos campos
+      setErro(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -34,7 +60,7 @@ export function Login() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
           {/* Campo de email */}
           <div className="flex flex-col gap-1">
             <label
@@ -45,9 +71,15 @@ export function Login() {
             </label>
             <input
               type="email"
+              id="email"
               placeholder="example@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !loading) {
+                  handleLogin(e);
+                }
+              }}
               className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
             />
           </div>
@@ -62,9 +94,15 @@ export function Login() {
             </label>
             <input
               type="password"
+              id="password"
               placeholder="********"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !loading) {
+                  handleLogin(e);
+                }
+              }}
               className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
             />
             <Link
@@ -76,18 +114,25 @@ export function Login() {
           </div>
 
           {/* Mensagem de erro */}
-          {erro && <p className="text-xs text-red-500">{erro}</p>}
+          {erro && (
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                {erro}
+              </p>
+            </div>
+          )}
 
           {/* Botão de login */}
           <Button
+            type="submit"
             variant="default"
-            onClick={handleLogin}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            disabled={loading}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Entrar
-            <ArrowRightIcon className="w-4 h-4" />
+            {loading ? "Entrando..." : "Entrar"}
+            {!loading && <ArrowRightIcon className="w-4 h-4" />}
           </Button>
-        </div>
+        </form>
 
         <p className="text-sm text-zinc-700 dark:text-zinc-300">
           Não tem conta?{" "}

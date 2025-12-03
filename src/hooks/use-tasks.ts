@@ -1,138 +1,106 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-
-export interface Task {
-  id: number;
-  title: string;
-  status: "completed" | "in_progress" | "pending";
-  priority: "high" | "medium" | "low";
-  dueDate: string;
-  description?: string;
-}
+import { taskService, Task, Category, CreateTaskData, UpdateTaskData } from "@/services/task.service";
 
 export interface UseTasksReturn {
   tasks: Task[];
+  categories: Category[];
   loading: boolean;
   error: string | null;
   fetchTasks: () => Promise<void>;
-  createTask: (task: Omit<Task, "id">) => Promise<Task>;
-  updateTask: (id: number, task: Partial<Task>) => Promise<void>;
-  deleteTask: (id: number) => Promise<void>;
+  createTask: (task: CreateTaskData) => Promise<Task>;
+  updateTask: (id: string, task: UpdateTaskData) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
   searchTasks: (query: string) => Task[];
+  fetchCategories: () => Promise<void>;
 }
 
 export function useTasks(): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch tasks from API
+  // Busca categorias
+  const fetchCategories = useCallback(async () => {
+    try {
+      const cats = await taskService.getCategories();
+      setCategories(cats);
+      
+      // Se não houver categorias, cria a padrão
+      if (cats.length === 0) {
+        const defaultCat = await taskService.getDefaultCategory();
+        setCategories([defaultCat]);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar categorias:', err);
+      // Tenta obter categoria padrão
+      try {
+        const defaultCat = await taskService.getDefaultCategory();
+        setCategories([defaultCat]);
+      } catch (defaultErr) {
+        console.error('Erro ao obter categoria padrão:', defaultErr);
+      }
+    }
+  }, []);
+
+  // Busca tarefas da API
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/tasks");
-      if (!response.ok) throw new Error("Falha ao buscar tarefas");
-      const data = await response.json();
+      const data = await taskService.getTasks();
       setTasks(data);
-    } catch (err) {
-      // Fallback com dados mockados
-      const defaultTasks: Task[] = [
-        {
-          id: 1,
-          title: "Implementar dashboard",
-          status: "in_progress",
-          priority: "high",
-          dueDate: "2025-11-30",
-        },
-        {
-          id: 2,
-          title: "Revisar código",
-          status: "pending",
-          priority: "medium",
-          dueDate: "2025-12-01",
-        },
-        {
-          id: 3,
-          title: "Testes unitários",
-          status: "completed",
-          priority: "high",
-          dueDate: "2025-11-28",
-        },
-        {
-          id: 4,
-          title: "Documentação",
-          status: "pending",
-          priority: "low",
-          dueDate: "2025-12-05",
-        },
-      ];
-      setTasks(defaultTasks);
-      setError(null); // Silenciar erro do fallback
+    } catch (err: any) {
+      setError(err.message || "Erro ao buscar tarefas");
+      setTasks([]); // Limpa tarefas em caso de erro
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Create a new task
+  // Cria nova tarefa
   const createTask = useCallback(
-    async (task: Omit<Task, "id">) => {
+    async (task: CreateTaskData) => {
       try {
-        const response = await fetch("/api/tasks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(task),
-        });
-        if (!response.ok) throw new Error("Falha ao criar tarefa");
-        const newTask = await response.json();
+        const newTask = await taskService.createTask(task);
         setTasks((prev) => [...prev, newTask]);
         return newTask;
-      } catch (err) {
-        // Fallback: criar localmente
-        const newTask: Task = {
-          ...task,
-          id: Math.max(...tasks.map((t) => t.id), 0) + 1,
-        };
-        setTasks((prev) => [...prev, newTask]);
-        return newTask;
+      } catch (err: any) {
+        const errorMessage = err.message || "Erro ao criar tarefa";
+        setError(errorMessage);
+        throw new Error(errorMessage);
       }
     },
-    [tasks]
+    []
   );
 
-  // Update a task
-  const updateTask = useCallback(async (id: number, updates: Partial<Task>) => {
+  // Atualiza tarefa
+  const updateTask = useCallback(async (id: string, updates: UpdateTaskData) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error("Falha ao atualizar tarefa");
-      const updated = await response.json();
+      const updated = await taskService.updateTask(id, updates);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
-    } catch (err) {
-      // Fallback: atualizar localmente
-      setTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-      );
+    } catch (err: any) {
+      const errorMessage = err.message || "Erro ao atualizar tarefa";
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   }, []);
 
-  // Delete a task
-  const deleteTask = useCallback(async (id: number) => {
+  // Deleta tarefa
+  const deleteTask = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Falha ao deletar tarefa");
+      await taskService.deleteTask(id);
       setTasks((prev) => prev.filter((t) => t.id !== id));
-    } catch (err) {
-      // Fallback: deletar localmente
-      setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (err: any) {
+      const errorMessage = err.message || "Erro ao deletar tarefa";
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   }, []);
 
-  // Search tasks by query
+  // Busca tarefas por query
   const searchTasks = useCallback(
     (query: string) => {
       if (!query.trim()) return tasks;
@@ -145,13 +113,15 @@ export function useTasks(): UseTasksReturn {
     [tasks]
   );
 
-  // Fetch tasks on mount
+  // Busca tarefas e categorias ao montar
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+    fetchCategories();
+  }, [fetchTasks, fetchCategories]);
 
   return {
     tasks,
+    categories,
     loading,
     error,
     fetchTasks,
@@ -159,5 +129,6 @@ export function useTasks(): UseTasksReturn {
     updateTask,
     deleteTask,
     searchTasks,
+    fetchCategories,
   };
 }

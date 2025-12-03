@@ -1,150 +1,202 @@
-import { NextResponse, NextRequest  } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { TaskService } from "./task.service";
-import { NewTask } from '../../db/schema/tasks';
+import { NewTask } from "../../db/schema/tasks";
 import { authMiddleware } from "@/lib/auth";
 
 const taskService = new TaskService();
 
-export class TaskControlleer {
-    //post = /api/tasks (create)
+export class TaskController {
+  /**
+   * POST /api/tasks
+   * Cria nova tarefa
+   */
+  async create(req: Request) {
+    const authResult = authMiddleware(req as NextRequest);
 
-    async create (req: Request){
-
-        const authResult = authMiddleware(req as NextRequest);
-
-        if (authResult.response) {
-            return authResult.response; //erro 401 unauthorized 
-        }
-
-        const userId = authResult.userId as string; // userId é garantido
-
-        try {
-            const data: NewTask = await req.json();
-
-            //formata os dados e chama o service
-            const newTask = await taskService.createTask({...data, userId }, userId);
-
-            return NextResponse.json(newTask, { status: 201 });
-        } catch (error) {
-            //lida com erros no service validações/regras de negócio
-            if (error instanceof Error) {
-                return NextResponse.json({ error: error.message }, { status: 400});
-            }
-            return NextResponse.json({ error: "Unknown error" }, { status: 400});
-        }
+    if (authResult.response) {
+      return authResult.response; // erro 401 unauthorized
     }
 
-    async getById(req: Request, id: string) {
-        // GET /api/tasks/[id] -> busca pelo ID
-        // o ID seria passado como parâmetro da rota Next.js (params)
-        
-        const authResult = authMiddleware(req as NextRequest);
-        
-        if (authResult.response) {
-            return authResult.response 
-        } 
+    const userId = authResult.userId as string; // userId é garantido
 
-        const userId = authResult.userId as string;
+    try {
+      const body = await req.json();
+      const { title, description, status, priority, dueDate, categoryId } =
+        body;
 
-        try {
-            const task = await taskService.getTaskById(id, userId);
-            return NextResponse.json(task, { status: 200 });
+      // Validação básica
+      if (!title || !title.trim()) {
+        return NextResponse.json(
+          { error: "Título da tarefa é obrigatório." },
+          { status: 400 }
+        );
+      }
 
-        } catch(error: unknown) {
-            if (error instanceof Error){
-                if (error.message.includes("não encontrada") || error.message.includes("negado")) {
-                    return NextResponse.json({error: error.message}, {status: 404});
-                }
-            }
+      if (!categoryId) {
+        return NextResponse.json(
+          { error: "Categoria é obrigatória." },
+          { status: 400 }
+        );
+      }
+
+      // Prepara dados para criação
+      const taskData: NewTask = {
+        title: title.trim(),
+        description: description || null,
+        status: status || "pending",
+        priority: priority || "medium",
+        userId: userId,
+        categoryId: categoryId,
+        dueDate: dueDate ? new Date(dueDate) : null,
+      };
+
+      // Chama o service
+      const newTask = await taskService.createTask(taskData, userId);
+
+      return NextResponse.json(newTask, { status: 201 });
+    } catch (error) {
+      // Lida com erros do service (validações/regras de negócio)
+      if (error instanceof Error) {
+        // Erros de validação (400)
+        if (
+          error.message.includes("obrigatório") ||
+          error.message.includes("mínimo")
+        ) {
+          return NextResponse.json({ error: error.message }, { status: 400 });
         }
-        return NextResponse.json({ error: "erro interno do servidor."}, {status: 500});
+        // Outros erros
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      return NextResponse.json(
+        { error: "Erro ao criar tarefa." },
+        { status: 500 }
+      );
+    }
+  }
+
+  async getById(req: Request, id: string) {
+    // GET /api/tasks/[id] -> busca pelo ID
+    // o ID seria passado como parâmetro da rota Next.js (params)
+
+    const authResult = authMiddleware(req as NextRequest);
+
+    if (authResult.response) {
+      return authResult.response;
     }
 
-    async listByUser (req: Request, searchParams: URLSearchParams) {
-        //GET /api/tasks (Listagem)
-        //Nota: os filtros vão variar conforme os parametros de busca (searchParams)
-        
-        const authResult = authMiddleware(req as NextRequest);
+    const userId = authResult.userId as string;
 
-        if (authResult.response){
-            return authResult.response; // Retorna 401 Unauthorized
+    try {
+      const task = await taskService.getTaskById(id, userId);
+      return NextResponse.json(task, { status: 200 });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (
+          error.message.includes("não encontrada") ||
+          error.message.includes("negado")
+        ) {
+          return NextResponse.json({ error: error.message }, { status: 404 });
         }
+      }
+    }
+    return NextResponse.json(
+      { error: "erro interno do servidor." },
+      { status: 500 }
+    );
+  }
 
-        const userId = authResult.userId as string;
+  /**
+   * GET /api/tasks
+   * Lista tarefas do usuário
+   */
+  async listByUser(req: Request, searchParams: URLSearchParams) {
+    const authResult = authMiddleware(req as NextRequest);
 
-        //transforma os paramtetros de URL em um objeto de filtro simples
-
-        const filters = Object.fromEntries(searchParams.entries());
-
-        try { 
-            const tasks = await taskService.listTasksByUser(userId, filters);
-
-            if (tasks.length === 0) {
-                return NextResponse.json(
-                    {
-                    message: "Nenhuma tarefa encontrada com esses filtros",
-                    tasks: []
-                    }, 
-                    {status: 200}
-                );
-            }
-            
-            return NextResponse.json(tasks, { status: 200 });
-
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                return NextResponse.json({ error: "Erro ao listar tarefas."}, {status: 500});
-            }
-        }
+    if (authResult.response) {
+      return authResult.response; // Retorna 401 Unauthorized
     }
 
-    async update (req: Request, id: string) {
-        // PUT/PATCH /api/tasks/[id] -> atualização 
-        
-        const authResult = authMiddleware(req as NextRequest);
+    const userId = authResult.userId as string;
 
-        if (authResult.response){
-            return authResult.response; // 401 Unauthorize
-        }
+    try {
+      // Transforma os parâmetros de URL em um objeto de filtro simples
+      const filters = Object.fromEntries(searchParams.entries());
 
-        const userId = authResult.userId as string;
+      // Chama o service
+      const tasks = await taskService.listTasksByUser(userId, filters);
 
-        const data = await req.json();
+      if (tasks.length === 0) {
+        return NextResponse.json(
+          {
+            message: "Nenhuma tarefa encontrada com esses filtros",
+            tasks: [],
+          },
+          { status: 200 }
+        );
+      }
 
-        try {
-            const updateTask = await taskService.updateTask(id, userId, data);
+      return NextResponse.json(tasks, { status: 200 });
+    } catch (error: unknown) {
+      console.error("Erro ao listar tarefas:", error);
+      if (error instanceof Error) {
+        return NextResponse.json(
+          { error: error.message || "Erro ao listar tarefas." },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json(
+        { error: "Erro ao listar tarefas." },
+        { status: 500 }
+      );
+    }
+  }
 
-            return NextResponse.json(updateTask, { status: 200});
+  async update(req: Request, id: string) {
+    // PUT/PATCH /api/tasks/[id] -> atualização
 
-        } catch (error: unknown) {
-            if (error instanceof Error) { 
-                const status = error.message.includes("atualizar") ? 404 : 400;
+    const authResult = authMiddleware(req as NextRequest);
 
-                return NextResponse.json({error: error.message }, { status });
-            }
-        }
+    if (authResult.response) {
+      return authResult.response; // 401 Unauthorize
     }
 
-    async delete(req: Request, id: string) {
-        // delete -> /api/tasks/[id] (deletar)
-        
-        const authResult = authMiddleware(req as NextRequest);
+    const userId = authResult.userId as string;
 
-        if (authResult.response) {
-            return authResult.response; // 401 ou unauthorized
-        }
+    const data = await req.json();
 
-        const userId = authResult.userId as string;
+    try {
+      const updateTask = await taskService.updateTask(id, userId, data);
 
-        try {
-            await taskService.deleteTask(id, userId);
+      return NextResponse.json(updateTask, { status: 200 });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        const status = error.message.includes("atualizar") ? 404 : 400;
 
-            return new Response(null, { status: 204 }); //204 = sucesso sem conteúdo 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                //retorna acesso negado ou não encontrado
-                return NextResponse.json({error: error.message}, {status: 404});
-            }
-        }
+        return NextResponse.json({ error: error.message }, { status });
+      }
     }
+  }
+
+  async delete(req: Request, id: string) {
+    // delete -> /api/tasks/[id] (deletar)
+
+    const authResult = authMiddleware(req as NextRequest);
+
+    if (authResult.response) {
+      return authResult.response; // 401 ou unauthorized
+    }
+
+    const userId = authResult.userId as string;
+
+    try {
+      await taskService.deleteTask(id, userId);
+
+      return new Response(null, { status: 204 }); //204 = sucesso sem conteúdo
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        //retorna acesso negado ou não encontrado
+        return NextResponse.json({ error: error.message }, { status: 404 });
+      }
+    }
+  }
 }

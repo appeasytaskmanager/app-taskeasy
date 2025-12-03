@@ -5,6 +5,7 @@ import LogoEasyTask from "@/app/components/ui/logo";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type FormState = {
   name: string;
@@ -14,17 +15,6 @@ type FormState = {
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const mockExistingEmails = [
-  "admin@example.com",
-  "user@teste.com",
-  "teste@domain.com",
-];
-
-async function checkEmailExists(email: string): Promise<boolean> {
-  await new Promise((r) => setTimeout(r, 700));
-  return mockExistingEmails.includes(email.toLowerCase());
-}
 
 export function Cadastro() {
   const [form, setForm] = useState<FormState>({
@@ -38,15 +28,14 @@ export function Cadastro() {
     Partial<Record<keyof FormState | "general", string>>
   >({});
 
-  const [checkingEmail, setCheckingEmail] = useState(false);
-  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
 
   function handleChange<K extends keyof FormState>(key: K, value: string) {
     setForm((s) => ({ ...s, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined, general: undefined }));
-    if (key === "email") setEmailAvailable(null);
   }
 
   const senhaTemMaiuscula = /[A-Z]/.test(form.password);
@@ -55,22 +44,17 @@ export function Cadastro() {
     const newErrors: typeof errors = {};
 
     // Nome
-    if (!form.name.trim()) newErrors.name = "Nome é obrigatório.";
+    if (!form.name.trim()) {
+      newErrors.name = "Nome é obrigatório.";
+    } else if (form.name.trim().length < 2) {
+      newErrors.name = "Nome deve ter no mínimo 2 caracteres.";
+    }
 
     // Email
     if (!form.email.trim()) {
       newErrors.email = "Email é obrigatório.";
     } else if (!emailRegex.test(form.email.trim())) {
       newErrors.email = "Formato de email inválido.";
-    } else {
-      setCheckingEmail(true);
-      try {
-        const exists = await checkEmailExists(form.email.trim());
-        setEmailAvailable(!exists);
-        if (exists) newErrors.email = "Este email já está cadastrado.";
-      } finally {
-        setCheckingEmail(false);
-      }
     }
 
     // Senha
@@ -81,7 +65,9 @@ export function Cadastro() {
     }
 
     // Confirmar Senha
-    if (form.confirmPassword !== form.password) {
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = "Confirmação de senha é obrigatória.";
+    } else if (form.confirmPassword !== form.password) {
       newErrors.confirmPassword = "As senhas não coincidem.";
     }
 
@@ -95,34 +81,49 @@ export function Cadastro() {
     const ok = await validateAll();
     if (!ok) return;
 
+    setLoading(true);
+    setErrors({});
+
     try {
-      const response = JSON.stringify({
-        name: form.name,
-        email: form.email,
-        password: form.password,
-      });
-
-      const responseApi = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: response,
-      });
-
-      const data = await responseApi.json();
-      console.log(data);
-
-      alert("Cadastro realizado com sucesso!");
-
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-      setEmailAvailable(null);
-      setErrors({});
-    } catch {
-      setErrors({ general: "Erro ao realizar cadastro. Tente novamente." });
+      await register(form.name.trim(), form.email.trim(), form.password);
+      // O redirecionamento é feito automaticamente pelo AuthContext após login
+    } catch (error: any) {
+      // Extrai a mensagem de erro silenciosamente (sem logar no console)
+      let errorMessage = "Erro ao realizar cadastro. Tente novamente.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      // Verifica se é erro de email duplicado (409) ou mensagem relacionada
+      const lowerMessage = errorMessage.toLowerCase();
+      const isEmailError = 
+        lowerMessage.includes('email') && 
+        (lowerMessage.includes('cadastrado') || 
+         lowerMessage.includes('já está') ||
+         lowerMessage.includes('já existe') ||
+         lowerMessage.includes('já registrado') ||
+         lowerMessage.includes('duplicado'));
+      
+      if (isEmailError) {
+        // Exibe erro no campo de email (em vermelho abaixo do campo)
+        setErrors({ 
+          email: errorMessage, 
+          general: undefined 
+        });
+      } else {
+        // Exibe erro geral abaixo dos campos em destaque (caixa vermelha)
+        setErrors({ 
+          general: errorMessage,
+          email: undefined 
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -160,31 +161,8 @@ export function Cadastro() {
               placeholder="exemplo@email.com"
               value={form.email}
               onChange={(e) => handleChange("email", e.target.value)}
-              onBlur={async () => {
-                if (form.email.trim() && emailRegex.test(form.email.trim())) {
-                  setCheckingEmail(true);
-                  const exists = await checkEmailExists(form.email.trim());
-                  setEmailAvailable(!exists);
-                  if (exists)
-                    setErrors((prev) => ({
-                      ...prev,
-                      email: "Este email já está cadastrado.",
-                    }));
-                  setCheckingEmail(false);
-                }
-              }}
-              className="px-4 py-3 border rounded-md text-sm dark:bg-zinc-800 border-zinc-700 text-zinc-100"
+              className="px-4 py-3 border rounded-md text-sm dark:bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-2 ring-blue-500 outline-none"
             />
-
-            <p className="text-xs text-zinc-400">
-              {checkingEmail
-                ? "Verificando..."
-                : emailAvailable === true
-                ? "Email disponível"
-                : emailAvailable === false
-                ? "Email já cadastrado"
-                : "Informe um email válido"}
-            </p>
 
             {errors.email && (
               <p className="text-xs text-red-500">{errors.email}</p>
@@ -257,17 +235,21 @@ export function Cadastro() {
 
           {/* Erro geral */}
           {errors.general && (
-            <p className="text-xs text-red-500">{errors.general}</p>
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                {errors.general}
+              </p>
+            </div>
           )}
 
           {/* Botão */}
           <Button
             variant="default"
             type="submit"
-            disabled={checkingEmail}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            disabled={loading}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cadastrar
+            {loading ? "Cadastrando..." : "Cadastrar"}
           </Button>
         </form>
 

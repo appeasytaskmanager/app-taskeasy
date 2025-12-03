@@ -30,7 +30,7 @@ export function Forgot() {
       });
 
       const data = await resp.json().catch(() => ({}));
-      setMensagem(data?.message || "Verifique seu email, por favor. Você receberá as instruções para redefinir sua senha.");
+      setMensagem(data?.message || "Verifique seu email. Você receberá as instruções para redefinir sua senha.");
     } catch (error) {
       setMensagem("Erro ao enviar. Tente novamente mais tarde.");
     }

@@ -12,9 +12,10 @@ export async function POST(req: Request) {
         //validação do input
         if (!email || !password) {
             return NextResponse.json(
-                {error: "Email e senha são obrigatórios!"}, {status: 400}
+                {error: "Email e senha são obrigatórios!"}, 
+                {status: 400}
             );
-    }
+        }
 
         //Busca usuário pelo email
 
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
 
     if (existingUser.length === 0) {
         return NextResponse.json(
-            {error: "Usuário não encontrado!"},
+            {error: "Usuário não encontrado! Verifique seu email e tente novamente."},
             {status: 401}
         );
     }
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
 
     if (!passwordMatch) {
         return NextResponse.json(
-            {error: "Credenciais Inválidas!"},
+            {error: "Credenciais inválidas! Email ou senha incorretos."},
             {status: 401}
         );
     }

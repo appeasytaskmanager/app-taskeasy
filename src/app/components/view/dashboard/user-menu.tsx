@@ -2,23 +2,25 @@
 
 import { useState } from "react";
 import { User, LogOut, Settings, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "../../ui/button";
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout, navigateTo } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
   if (!user) return null;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsOpen(false);
   };
 
   const handleNavigate = (path: string) => {
-    navigateTo(path);
+    router.push(path);
     setIsOpen(false);
   };
 

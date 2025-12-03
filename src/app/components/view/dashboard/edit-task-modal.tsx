@@ -1,19 +1,20 @@
 "use client";
 
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks, Task } from "@/hooks/use-tasks";
 import { useState, useEffect } from "react";
 
 import { Input } from "@/app/components/ui/input";
 import { X } from "lucide-react";
 import { Button } from "../../ui/button";
 
-interface NewTaskModalProps {
+interface EditTaskModalProps {
   isOpen: boolean;
+  task: Task | null;
   onClose: () => void;
 }
 
-export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
-  const { createTask, categories, fetchCategories } = useTasks();
+export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
+  const { updateTask, categories, fetchCategories } = useTasks();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
@@ -22,12 +23,14 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
     priority: "high" | "medium" | "low";
     categoryId: string;
     dueDate: string;
+    status: "completed" | "in_progress" | "pending";
   }>({
     title: "",
     description: "",
     priority: "medium",
     categoryId: "",
     dueDate: "",
+    status: "pending",
   });
 
   // Carrega categorias quando o modal abre
@@ -37,26 +40,29 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
     }
   }, [isOpen, fetchCategories]);
 
-  // Define categoria padrão quando categorias são carregadas
   useEffect(() => {
-    if (categories.length > 0 && !formData.categoryId) {
-      setFormData((prev) => ({
-        ...prev,
-        categoryId: categories[0].id,
-      }));
+    if (task) {
+      // Formata a data para o input (YYYY-MM-DD)
+      const dueDateFormatted = task.dueDate 
+        ? new Date(task.dueDate).toISOString().split('T')[0]
+        : "";
+      
+      setFormData({
+        title: task.title,
+        description: task.description || "",
+        priority: task.priority,
+        categoryId: task.categoryId || "",
+        dueDate: dueDateFormatted,
+        status: task.status,
+      });
     }
-  }, [categories]);
+  }, [task, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.title.trim()) {
+    
+    if (!task || !formData.title.trim()) {
       setError("Título da tarefa é obrigatório.");
-      return;
-    }
-
-    if (!formData.categoryId) {
-      setError("Categoria é obrigatória.");
       return;
     }
 
@@ -64,42 +70,31 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
     setLoading(true);
 
     try {
-      await createTask({
+      await updateTask(task.id, {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
         priority: formData.priority,
-        status: "pending",
-        categoryId: formData.categoryId,
+        status: formData.status,
+        categoryId: formData.categoryId || undefined,
         dueDate: formData.dueDate || undefined,
-      });
-
-      // Limpa formulário
-      setFormData({
-        title: "",
-        description: "",
-        priority: "medium",
-        categoryId: categories[0]?.id || "",
-        dueDate: "",
       });
       setError(null);
       onClose();
-    } catch (err: unknown) {
-      setError(
-        (err as Error).message || "Erro ao criar tarefa. Tente novamente."
-      );
+    } catch (err: any) {
+      setError(err.message || "Erro ao atualizar tarefa. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !task) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Nova Tarefa
+            Editar Tarefa
           </h2>
           <button
             onClick={onClose}
@@ -151,7 +146,6 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
                 setFormData({ ...formData, categoryId: e.target.value })
               }
               className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
-              required
             >
               <option value="">Selecione uma categoria</option>
               {categories.map((category) => (
@@ -185,17 +179,40 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
 
             <div>
               <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
-                Vencimento
+                Status
               </label>
-              <Input
-                type="date"
-                value={formData.dueDate}
+              <select
+                value={formData.status}
                 onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as
+                      | "completed"
+                      | "in_progress"
+                      | "pending",
+                  })
                 }
-                className="w-full"
-              />
+                className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
+              >
+                <option value="pending">Pendente</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="completed">Concluída</option>
+              </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
+              Vencimento
+            </label>
+            <Input
+              type="date"
+              value={formData.dueDate}
+              onChange={(e) =>
+                setFormData({ ...formData, dueDate: e.target.value })
+              }
+              className="w-full"
+            />
           </div>
 
           {/* Mensagem de erro */}
@@ -221,7 +238,7 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
               disabled={loading || !formData.title.trim()}
               className="flex-1"
             >
-              {loading ? "Criando..." : "Criar"}
+              {loading ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>

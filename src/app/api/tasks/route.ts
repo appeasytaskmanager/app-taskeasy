@@ -1,20 +1,21 @@
 import { NextRequest } from "next/server";
-import { TaskControlleer } from '../../../modules/tasks/task.controller';
+import { TaskController } from "../../../modules/tasks/task.controller";
 
-const taskController = new TaskControlleer();
+const taskController = new TaskController();
 
-// POST: /api/tasks (Create)
-
+/**
+ * POST /api/tasks
+ * Cria uma nova tarefa para o usuário autenticado
+ */
 export async function POST(request: NextRequest) {
-    return taskController.create(request);
+  return taskController.create(request);
 }
 
-//GET /api/tasks (listagem com filtros)
-
+/**
+ * GET /api/tasks
+ * Lista tarefas do usuário autenticado com filtros opcionais
+ */
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url); // extrai os parametros da URL 
-
-    //o controller espera o objeto da request e o params
-
-    return taskController.listByUser(request, searchParams);
+  const { searchParams } = new URL(request.url);
+  return taskController.listByUser(request, searchParams);
 }
