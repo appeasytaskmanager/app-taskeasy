@@ -22,20 +22,12 @@ export class TaskController {
 
     try {
       const body = await req.json();
-      const { title, description, status, priority, dueDate, categoryId } =
-        body;
+      const { title, description, status, priority, dueDate } = body;
 
       // Validação básica
       if (!title || !title.trim()) {
         return NextResponse.json(
           { error: "Título da tarefa é obrigatório." },
-          { status: 400 }
-        );
-      }
-
-      if (!categoryId) {
-        return NextResponse.json(
-          { error: "Categoria é obrigatória." },
           { status: 400 }
         );
       }
@@ -47,9 +39,8 @@ export class TaskController {
         status: status || "pending",
         priority: priority || "medium",
         userId: userId,
-        categoryId: categoryId,
         dueDate: dueDate ? new Date(dueDate) : null,
-        isDeleted: false, // Garante que a tarefa não seja marcada como deletada
+        isDeleted: false,
       };
 
       // Chama o service
@@ -170,16 +161,15 @@ export class TaskController {
     const userId = authResult.userId as string;
 
     const body = await req.json();
-    const { title, description, status, priority, dueDate, categoryId } = body;
+    const { title, description, status, priority, dueDate } = body;
 
     // Prepara dados para atualização (somente campos enviados)
     const updateData: Record<string, any> = {};
-
+    
     if (title !== undefined) updateData.title = title.trim();
     if (description !== undefined) updateData.description = description || null;
     if (status !== undefined) updateData.status = status;
     if (priority !== undefined) updateData.priority = priority;
-    if (categoryId !== undefined) updateData.categoryId = categoryId;
     if (dueDate !== undefined) {
       // Converte string para Date se necessário
       updateData.dueDate = dueDate ? new Date(dueDate) : null;

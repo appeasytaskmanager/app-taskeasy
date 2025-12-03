@@ -15,32 +15,22 @@ interface EditTaskModalProps {
 }
 
 export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
-  const { updateTask, categories, fetchCategories } = useTasks();
+  const { updateTask } = useTasks();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
     priority: "high" | "medium" | "low";
-    categoryId: string;
     dueDate: string;
     status: "completed" | "in_progress" | "pending" | "cancelled";
   }>({
     title: "",
     description: "",
     priority: "medium",
-    categoryId: "",
     dueDate: "",
     status: "pending",
   });
-
-  // Carrega categorias quando o modal abre
-  useEffect(() => {
-    if (isOpen) {
-      fetchCategories();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]); // Apenas isOpen como dependência
 
   useEffect(() => {
     if (task) {
@@ -53,7 +43,6 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
         title: task.title,
         description: task.description || "",
         priority: task.priority,
-        categoryId: task.categoryId || "",
         dueDate: dueDateFormatted,
         status: task.status,
       });
@@ -81,7 +70,6 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
         description: formData.description.trim() || undefined,
         priority: formData.priority,
         status: formData.status,
-        categoryId: formData.categoryId || undefined,
         dueDate: formData.dueDate || undefined,
       });
 
@@ -150,26 +138,6 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
               className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
               rows={3}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
-              Categoria
-            </label>
-            <select
-              value={formData.categoryId}
-              onChange={(e) =>
-                setFormData({ ...formData, categoryId: e.target.value })
-              }
-              className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
-            >
-              <option value="">Selecione uma categoria</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

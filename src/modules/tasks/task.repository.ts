@@ -10,7 +10,6 @@ interface UpdateTaskData {
   description?: string | null;
   status?: Task["status"]; //"pending", "in_progress", "completed","cancelled";
   priority?: Task["priority"]; //low, medium, high
-  categoryId?: string | null;
   dueDate?: Date | null;
 }
 

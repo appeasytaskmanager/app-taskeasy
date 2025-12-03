@@ -7,7 +7,6 @@ export interface Task {
   status: "pending" | "in_progress" | "completed" | "cancelled";
   priority: "low" | "medium" | "high";
   userId: string;
-  categoryId: string;
   dueDate: string | null;
   completedAt: string | null;
   createdAt: string;
@@ -15,19 +14,11 @@ export interface Task {
   isDeleted: boolean;
 }
 
-export interface Category {
-  id: string;
-  name: string;
-  createdAt: string;
-  updateAt: string;
-}
-
 export interface CreateTaskData {
   title: string;
   description?: string;
   status?: "pending" | "in_progress" | "completed" | "cancelled";
   priority?: "low" | "medium" | "high";
-  categoryId: string;
   dueDate?: string;
 }
 
@@ -36,7 +27,6 @@ export interface UpdateTaskData {
   description?: string;
   status?: "pending" | "in_progress" | "completed" | "cancelled";
   priority?: "low" | "medium" | "high";
-  categoryId?: string;
   dueDate?: string;
 }
 
@@ -118,33 +108,6 @@ class TaskService {
       await api.delete(`/api/tasks/${id}`);
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Erro ao deletar tarefa.';
-      throw new Error(errorMessage);
-    }
-  }
-
-  /**
-   * Lista todas as categorias disponíveis
-   */
-  async getCategories(): Promise<Category[]> {
-    try {
-      const response = await api.get<Category[]>('/api/categories');
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao buscar categorias:', error);
-      // Retorna array vazio se falhar (não bloqueia criação de tarefa)
-      return [];
-    }
-  }
-
-  /**
-   * Cria uma nova categoria
-   */
-  async createCategory(name: string): Promise<Category> {
-    try {
-      const response = await api.post<Category>('/api/categories', { name });
-      return response.data;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error || 'Erro ao criar categoria.';
       throw new Error(errorMessage);
     }
   }

@@ -8,7 +8,6 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
-import { categories } from "./categories"
 
 // Enum para status da tarefa
 export const taskStatusEnum = pgEnum("task_status", [
@@ -35,8 +34,6 @@ export const tasks = pgTable("tasks", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  categoryId: uuid("category_id")
-    .references(()=> categories.id, {onDelete: "set null"}), //.references() é o método que define as FK
   dueDate: timestamp("due_date"),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

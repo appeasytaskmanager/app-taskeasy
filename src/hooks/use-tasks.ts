@@ -1,14 +1,18 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { taskService, Task, Category, CreateTaskData, UpdateTaskData } from "@/services/task.service";
+import {
+  taskService,
+  Task,
+  CreateTaskData,
+  UpdateTaskData,
+} from "@/services/task.service";
 
 // Re-exporta tipos para uso em outros componentes
-export type { Task, Category, CreateTaskData, UpdateTaskData };
+export type { Task, CreateTaskData, UpdateTaskData };
 
 export interface UseTasksReturn {
   tasks: Task[];
-  categories: Category[];
   loading: boolean;
   error: string | null;
   fetchTasks: () => void;
@@ -16,7 +20,6 @@ export interface UseTasksReturn {
   updateTask: (id: string, task: UpdateTaskData) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   searchTasks: (query: string) => Task[];
-  fetchCategories: () => void;
 }
 
 export function useTasks(): UseTasksReturn {
@@ -40,38 +43,6 @@ export function useTasks(): UseTasksReturn {
     refetchOnWindowFocus: true,
   });
 
-  // Query para buscar categorias
-  const {
-    data: categories = [],
-    refetch: refetchCategories,
-  } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      try {
-        const cats = await taskService.getCategories();
-        
-        // Se não houver categorias, cria uma padrão para o usuário
-        if (cats.length === 0) {
-          try {
-            const defaultCat = await taskService.createCategory("Geral");
-            return [defaultCat];
-          } catch (createErr) {
-            console.error("Erro ao criar categoria padrão:", createErr);
-            return [];
-          }
-        }
-        
-        return cats;
-      } catch (err) {
-        console.error("Erro ao buscar categorias:", err);
-        return [];
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutos
-    refetchOnMount: false, // Não re-buscar ao montar
-    refetchOnWindowFocus: false, // Não re-buscar ao focar janela
-  });
-
   // Mutation para criar tarefa
   const createTaskMutation = useMutation({
     mutationFn: async (task: CreateTaskData) => {
@@ -92,7 +63,13 @@ export function useTasks(): UseTasksReturn {
 
   // Mutation para atualizar tarefa
   const updateTaskMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: UpdateTaskData }) => {
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: UpdateTaskData;
+    }) => {
       console.log("🔄 Atualizando tarefa:", id, updates);
       const updated = await taskService.updateTask(id, updates);
       console.log("✅ Tarefa atualizada:", updated);
@@ -138,7 +115,6 @@ export function useTasks(): UseTasksReturn {
 
   return {
     tasks,
-    categories,
     loading: tasksLoading,
     error: tasksError ? (tasksError as Error).message : null,
     fetchTasks: () => refetchTasks(),
@@ -152,6 +128,5 @@ export function useTasks(): UseTasksReturn {
       await deleteTaskMutation.mutateAsync(id);
     },
     searchTasks,
-    fetchCategories: () => refetchCategories(),
   };
 }
