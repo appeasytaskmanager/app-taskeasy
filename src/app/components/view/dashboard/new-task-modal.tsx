@@ -36,17 +36,19 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
     if (isOpen) {
       fetchCategories();
     }
-  }, [isOpen, fetchCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); // Apenas isOpen como dependência
 
-  // Define categoria padrão quando categorias são carregadas
+  // Define categoria padrão quando categorias são carregadas APENAS UMA VEZ
   useEffect(() => {
-    if (categories.length > 0 && !formData.categoryId) {
+    if (isOpen && categories.length > 0 && !formData.categoryId) {
       setFormData((prev) => ({
         ...prev,
         categoryId: categories[0].id,
       }));
     }
-  }, [categories, formData.categoryId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, categories]); // Remove formData.categoryId para evitar loop
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

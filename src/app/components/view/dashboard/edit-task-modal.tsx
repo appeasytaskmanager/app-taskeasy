@@ -39,7 +39,8 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
     if (isOpen) {
       fetchCategories();
     }
-  }, [isOpen, fetchCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); // Apenas isOpen como dependência
 
   useEffect(() => {
     if (task) {

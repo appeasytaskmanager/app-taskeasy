@@ -68,6 +68,8 @@ export function useTasks(): UseTasksReturn {
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
+    refetchOnMount: false, // Não re-buscar ao montar
+    refetchOnWindowFocus: false, // Não re-buscar ao focar janela
   });
 
   // Mutation para criar tarefa
