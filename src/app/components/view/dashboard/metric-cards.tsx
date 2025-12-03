@@ -1,4 +1,8 @@
+"use client"
+
+import { useMemo } from "react"
 import { TrendingUp, TrendingDown } from "lucide-react"
+import { useTasks } from "./tasks-provider-client"
 
 interface MetricData {
   title: string
@@ -9,42 +13,52 @@ interface MetricData {
   description: string
 }
 
-const metrics: MetricData[] = [
-  {
-    title: "Tarefas Concluídas",
-    value: "24",
-    change: "+12.5%",
-    trend: "up",
-    subtitle: "Aumento esta semana",
-    description: "Progresso consistente",
-  },
-  {
-    title: "Tarefas Pendentes",
-    value: "8",
-    change: "-5%",
-    trend: "down",
-    subtitle: "Redução em andamento",
-    description: "Executando bem",
-  },
-  {
-    title: "Em Progresso",
-    value: "5",
-    change: "+2",
-    trend: "up",
-    subtitle: "Ativas agora",
-    description: "Mantendo o foco",
-  },
-  {
-    title: "Taxa de Conclusão",
-    value: "87%",
-    change: "+3%",
-    trend: "up",
-    subtitle: "Desempenho excelente",
-    description: "Meta atingida",
-  },
-]
-
 export function MetricCards() {
+  const { tasks } = useTasks()
+
+  const metrics: MetricData[] = useMemo(() => {
+    const total = tasks.length
+    const completed = tasks.filter((t) => t.status === "completed").length
+    const pending = tasks.filter((t) => t.status === "pending").length
+    const inProgress = tasks.filter((t) => t.status === "in_progress").length
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
+
+    return [
+      {
+        title: "Tarefas Concluídas",
+        value: completed,
+        change: "+0",
+        trend: "up" as const,
+        subtitle: "Aumento esta semana",
+        description: "Progresso consistente",
+      },
+      {
+        title: "Tarefas Pendentes",
+        value: pending,
+        change: "-0",
+        trend: "down" as const,
+        subtitle: "Redução em andamento",
+        description: "Executando bem",
+      },
+      {
+        title: "Em Progresso",
+        value: inProgress,
+        change: "+0",
+        trend: "up" as const,
+        subtitle: "Ativas agora",
+        description: "Mantendo o foco",
+      },
+      {
+        title: "Taxa de Conclusão",
+        value: `${rate}%`,
+        change: "+0%",
+        trend: "up" as const,
+        subtitle: "Desempenho geral",
+        description: "Meta de conclusão",
+      },
+    ]
+  }, [tasks])
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {metrics.map((metric) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks } from "./tasks-provider-client";
 import { useState } from "react";
 
 import { Input } from "@/app/components/ui/input";

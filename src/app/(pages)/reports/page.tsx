@@ -1,8 +1,7 @@
-import {
-  Sidebar,
-  Header,
-} from "@/app/components/view/dashboard"
-import { ReportsContent } from "@/app/components/view/reports"
+import { Sidebar } from "@/app/components/view/dashboard";
+import { Header } from "@/app/components/view/dashboard/header";
+import { ReportsContent } from "@/app/components/view/reports";
+import { TasksProviderClient } from "@/app/components/view/dashboard/tasks-provider-client";
 
 export default function ReportsPage() {
   return (
@@ -11,15 +10,17 @@ export default function ReportsPage() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
-        {/* Header */}
-        <Header />
+      <TasksProviderClient>
+        <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
+          {/* Header */}
+          <Header />
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-y-auto">
-          <ReportsContent />
-        </main>
-      </div>
+          {/* Content Area */}
+          <main className="flex-1 overflow-y-auto">
+            <ReportsContent />
+          </main>
+        </div>
+      </TasksProviderClient>
     </div>
-  )
+  );
 }
