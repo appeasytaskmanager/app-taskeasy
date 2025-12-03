@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/app/components/ui/input";
 import { X } from "lucide-react";
 import { Button } from "../../ui/button";
+import { useToast } from "@/app/components/ui/toast";
 
 interface EditTaskModalProps {
   isOpen: boolean;
@@ -15,15 +16,15 @@ interface EditTaskModalProps {
 
 export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
   const { updateTask, categories, fetchCategories } = useTasks();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
     priority: "high" | "medium" | "low";
     categoryId: string;
     dueDate: string;
-    status: "completed" | "in_progress" | "pending";
+    status: "completed" | "in_progress" | "pending" | "cancelled";
   }>({
     title: "",
     description: "",
@@ -62,14 +63,18 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
     e.preventDefault();
     
     if (!task || !formData.title.trim()) {
-      setError("Título da tarefa é obrigatório.");
+      toast({
+        title: "Campo obrigatório",
+        description: "Título da tarefa é obrigatório.",
+        variant: "warning",
+      });
       return;
     }
 
-    setError(null);
     setLoading(true);
 
     try {
+      // Atualiza a tarefa (o hook já atualiza o estado automaticamente)
       await updateTask(task.id, {
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
@@ -78,10 +83,20 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
         categoryId: formData.categoryId || undefined,
         dueDate: formData.dueDate || undefined,
       });
-      setError(null);
+
+      toast({
+        title: "Tarefa atualizada",
+        description: "As alterações foram salvas com sucesso.",
+        variant: "success",
+      });
+
       onClose();
     } catch (err: any) {
-      setError(err.message || "Erro ao atualizar tarefa. Tente novamente.");
+      toast({
+        title: "Erro ao atualizar tarefa",
+        description: err.message || "Tente novamente.",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -214,15 +229,6 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
               className="w-full"
             />
           </div>
-
-          {/* Mensagem de erro */}
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
-                {error}
-              </p>
-            </div>
-          )}
 
           <div className="flex gap-3 pt-4">
             <Button

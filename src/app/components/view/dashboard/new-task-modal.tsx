@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/app/components/ui/input";
 import { X } from "lucide-react";
 import { Button } from "../../ui/button";
+import { useToast } from "@/app/components/ui/toast";
 
 interface NewTaskModalProps {
   isOpen: boolean;
@@ -14,8 +15,8 @@ interface NewTaskModalProps {
 
 export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
   const { createTask, categories, fetchCategories } = useTasks();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
@@ -45,25 +46,33 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
         categoryId: categories[0].id,
       }));
     }
-  }, [categories]);
+  }, [categories, formData.categoryId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      setError("Título da tarefa é obrigatório.");
+      toast({
+        title: "Campo obrigatório",
+        description: "Título da tarefa é obrigatório.",
+        variant: "warning",
+      });
       return;
     }
 
     if (!formData.categoryId) {
-      setError("Categoria é obrigatória.");
+      toast({
+        title: "Campo obrigatório",
+        description: "Categoria é obrigatória.",
+        variant: "warning",
+      });
       return;
     }
 
-    setError(null);
     setLoading(true);
 
     try {
+      // Cria a tarefa (o hook já atualiza o estado automaticamente)
       await createTask({
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
@@ -81,12 +90,20 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
         categoryId: categories[0]?.id || "",
         dueDate: "",
       });
-      setError(null);
+
+      toast({
+        title: "Tarefa criada",
+        description: "A tarefa foi criada com sucesso.",
+        variant: "success",
+      });
+
       onClose();
     } catch (err: unknown) {
-      setError(
-        (err as Error).message || "Erro ao criar tarefa. Tente novamente."
-      );
+      toast({
+        title: "Erro ao criar tarefa",
+        description: (err as Error).message || "Tente novamente.",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -197,15 +214,6 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
               />
             </div>
           </div>
-
-          {/* Mensagem de erro */}
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
-                {error}
-              </p>
-            </div>
-          )}
 
           <div className="flex gap-3 pt-4">
             <Button

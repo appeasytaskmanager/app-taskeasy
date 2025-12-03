@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Eye, EyeOff } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useTasks, Task } from "@/hooks/use-tasks";
 
-import { NewTaskModal, EditTaskModal, TaskRowActions } from "@/app/components/view/dashboard";
-import Link from "next/link";
+import {
+  NewTaskModal,
+  EditTaskModal,
+  TaskRowActions,
+} from "@/app/components/view/dashboard";
+import { useToast } from "@/app/components/ui/toast";
 import { Button } from "../../ui/button";
+import { Input } from "../../ui/input";
+import { Select, SelectOption, StatusSelect } from "../../ui/select";
 import {
   Card,
   CardContent,
@@ -15,43 +21,78 @@ import {
   CardTitle,
 } from "../../ui/card";
 
+const STATUS_OPTIONS = [
+  {
+    value: "pending",
+    label: "Pendente",
+    className:
+      "bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300",
+  },
+  {
+    value: "in_progress",
+    label: "Em Progresso",
+    className: "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300",
+  },
+  {
+    value: "completed",
+    label: "Concluída",
+    className:
+      "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300",
+  },
+];
+
 export function TasksPageContent() {
   const { tasks, loading, updateTask, deleteTask } = useTasks();
+  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [sortBy, setSortBy] = useState<"date" | "priority">("date");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "completed" | "in_progress" | "pending"
-  >("all");
 
-  // Filtrar tarefas
-  const filteredTasks = tasks.filter((task) => {
-    if (filterStatus === "all") return true;
-    return task.status === filterStatus;
+  // Filtros
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+
+  // Garante que tasks seja um array
+  const tasksList = Array.isArray(tasks) ? tasks : [];
+
+  // Aplicar filtros
+  const filteredTasks = tasksList.filter((task) => {
+    // Filtro por nome
+    const matchesSearch =
+      searchQuery.trim() === "" ||
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Filtro por status
+    const matchesStatus =
+      filterStatus === "all" || task.status === filterStatus;
+
+    // Filtro por prioridade
+    const matchesPriority =
+      filterPriority === "all" || task.priority === filterPriority;
+
+    return matchesSearch && matchesStatus && matchesPriority;
   });
 
-  // Ordenar tarefas
+  // Ordenar por data de criação (mais recentes primeiro)
   const sortedTasks = [...filteredTasks].sort((a, b) => {
-    if (sortBy === "priority") {
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    }
+    if (!a.dueDate && !b.dueDate) return 0;
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
     return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300";
-      case "in_progress":
-        return "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300";
-      case "pending":
-        return "bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300";
-      default:
-        return "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300";
-    }
+  const clearFilters = () => {
+    setSearchQuery("");
+    setFilterStatus("all");
+    setFilterPriority("all");
   };
+
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
+    filterStatus !== "all" ||
+    filterPriority !== "all";
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -79,11 +120,24 @@ export function TasksPageContent() {
     }
   };
 
-  const handleStatusChange = async (
-    id: number,
-    status: "completed" | "in_progress" | "pending"
-  ) => {
-    await updateTask(id, { status });
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await updateTask(id, {
+        status: status as "completed" | "in_progress" | "pending",
+      });
+      toast({
+        title: "Status atualizado",
+        description: "O status da tarefa foi alterado.",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar status",
+        description:
+          error instanceof Error ? error.message : "Tente novamente.",
+        variant: "error",
+      });
+    }
   };
 
   const handleEditTask = (task: Task) => {
@@ -91,7 +145,7 @@ export function TasksPageContent() {
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteTask = async (taskId: number) => {
+  const handleDeleteTask = async (taskId: string) => {
     await deleteTask(taskId);
   };
 
@@ -117,48 +171,109 @@ export function TasksPageContent() {
               Minhas Tarefas
             </h1>
             <p className="text-slate-600 dark:text-slate-400 mt-1">
-              Total de {tasks.length} tarefa{tasks.length !== 1 ? "s" : ""}
+              Total de {tasksList.length} tarefa
+              {tasksList.length !== 1 ? "s" : ""}
             </p>
           </div>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="w-4 h-4" />
+            Nova Tarefa
+          </Button>
         </div>
 
-        {/* Todas as Tarefas */}
+        {/* Filtros */}
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex justify-between w-full items-center">
-                <div className="flex flex-col gap-2">
-                  <CardTitle className="text-slate-900 dark:text-white">
-                    Todas as Tarefas
-                  </CardTitle>
-                  <CardDescription className="text-slate-500 dark:text-slate-400">
-                    {sortedTasks.length} tarefa
-                    {sortedTasks.length !== 1 ? "s" : ""} no total
-                  </CardDescription>
-                </div>
-                <Button
-                  onClick={() => setIsModalOpen(true)}
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Plus className="w-4 h-4" />
-                  Criar Tarefa
-                </Button>
-              </div>
-              {sortedTasks.length > 5 && (
-                <Link href="#all-tasks">
-                  <Button
-                    variant="outline"
-                    className="border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    Ver Todas
-                  </Button>
-                </Link>
-              )}
-            </div>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-slate-900 dark:text-white">
+              Filtros
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto flex items-center justify-center">
-              {tasks.length > 0 ? (
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Busca por nome */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por nome ou descrição..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Filtro por Status */}
+              <div className="w-full md:w-48">
+                <Select
+                  value={filterStatus}
+                  onValueChange={setFilterStatus}
+                  placeholder="Todos os status"
+                >
+                  <SelectOption value="all">Todos os status</SelectOption>
+                  <SelectOption value="pending">Pendente</SelectOption>
+                  <SelectOption value="in_progress">Em Progresso</SelectOption>
+                  <SelectOption value="completed">Concluída</SelectOption>
+                </Select>
+              </div>
+
+              {/* Filtro por Prioridade */}
+              <div className="w-full md:w-48">
+                <Select
+                  value={filterPriority}
+                  onValueChange={setFilterPriority}
+                  placeholder="Todas as prioridades"
+                >
+                  <SelectOption value="all">Todas as prioridades</SelectOption>
+                  <SelectOption value="high">Alta</SelectOption>
+                  <SelectOption value="medium">Média</SelectOption>
+                  <SelectOption value="low">Baixa</SelectOption>
+                </Select>
+              </div>
+
+              {/* Limpar filtros */}
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="gap-2 border-slate-200 dark:border-slate-700"
+                >
+                  <X className="w-4 h-4" />
+                  Limpar
+                </Button>
+              )}
+            </div>
+
+            {/* Indicador de resultados */}
+            {hasActiveFilters && (
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-4">
+                {sortedTasks.length} tarefa{sortedTasks.length !== 1 ? "s" : ""}{" "}
+                encontrada{sortedTasks.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Lista de Tarefas */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-slate-900 dark:text-white">
+              Tarefas
+            </CardTitle>
+            <CardDescription className="text-slate-500 dark:text-slate-400">
+              {sortedTasks.length} tarefa{sortedTasks.length !== 1 ? "s" : ""}{" "}
+              listada{sortedTasks.length !== 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={sortedTasks.length > 0 ? "overflow-visible pb-32" : ""}
+            >
+              {sortedTasks.length > 0 ? (
                 <table className="w-full">
                   <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                     <tr>
@@ -180,7 +295,7 @@ export function TasksPageContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                    {sortedTasks.slice(0, 10).map((task) => (
+                    {sortedTasks.map((task) => (
                       <tr
                         key={task.id}
                         className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
@@ -195,27 +310,27 @@ export function TasksPageContent() {
                           >
                             {task.title}
                           </p>
+                          {task.description && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                              {task.description}
+                            </p>
+                          )}
                         </td>
                         <td className="px-6 py-4">
-                          <select
+                          <StatusSelect
                             value={task.status}
-                            onChange={(e) =>
-                              handleStatusChange(
-                                task.id,
-                                e.target.value as
-                                  | "completed"
-                                  | "in_progress"
-                                  | "pending"
-                              )
+                            onValueChange={(value) =>
+                              handleStatusChange(task.id, value)
                             }
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border-0 cursor-pointer ${getStatusColor(
-                              task.status
-                            )}`}
-                          >
-                            <option value="pending">Pendente</option>
-                            <option value="in_progress">Em Progresso</option>
-                            <option value="completed">Concluída</option>
-                          </select>
+                            options={STATUS_OPTIONS}
+                            className={
+                              task.status === "completed"
+                                ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300"
+                                : task.status === "in_progress"
+                                ? "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
+                                : "bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300"
+                            }
+                          />
                         </td>
                         <td className="px-6 py-4">
                           <span
@@ -228,7 +343,11 @@ export function TasksPageContent() {
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {new Date(task.dueDate).toLocaleDateString("pt-BR")}
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString(
+                                  "pt-BR"
+                                )
+                              : "-"}
                           </p>
                         </td>
                         <td className="px-6 py-4">
@@ -243,9 +362,22 @@ export function TasksPageContent() {
                   </tbody>
                 </table>
               ) : (
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  Nenhuma tarefa encontrada
-                </p>
+                <div className="text-center py-8">
+                  <p className="text-slate-600 dark:text-slate-400">
+                    {hasActiveFilters
+                      ? "Nenhuma tarefa encontrada com os filtros aplicados"
+                      : "Nenhuma tarefa cadastrada"}
+                  </p>
+                  {hasActiveFilters && (
+                    <Button
+                      variant="link"
+                      onClick={clearFilters}
+                      className="mt-2 text-blue-600 dark:text-blue-400"
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </CardContent>

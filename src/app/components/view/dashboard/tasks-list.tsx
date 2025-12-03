@@ -7,14 +7,39 @@ import Link from "next/link";
 import { Button } from "../../ui/button";
 import { EditTaskModal } from "./edit-task-modal";
 import { TaskRowActions } from "./task-row-actions";
+import { useToast } from "@/app/components/ui/toast";
+import { Select, SelectOption, StatusSelect } from "../../ui/select";
+
+const STATUS_OPTIONS = [
+  {
+    value: "pending",
+    label: "Pendente",
+    className:
+      "bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300",
+  },
+  {
+    value: "in_progress",
+    label: "Em Progresso",
+    className: "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300",
+  },
+  {
+    value: "completed",
+    label: "Concluída",
+    className:
+      "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300",
+  },
+];
 
 export function TasksList() {
   const { tasks, loading, updateTask, deleteTask } = useTasks();
-  const [sortBy, setSortBy] = useState<"date" | "priority">("date");
+  const { toast } = useToast();
+  const [sortBy, setSortBy] = useState("date");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const recentTasks = tasks.slice(0, 4);
+  // Garante que tasks seja um array
+  const tasksList = Array.isArray(tasks) ? tasks : [];
+  const recentTasks = tasksList.slice(0, 4);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -26,19 +51,6 @@ export function TasksList() {
         return "bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300";
       default:
         return "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "Concluída";
-      case "in_progress":
-        return "Em Progresso";
-      case "pending":
-        return "Pendente";
-      default:
-        return status;
     }
   };
 
@@ -55,11 +67,24 @@ export function TasksList() {
     }
   };
 
-  const handleStatusChange = async (
-    id: string,
-    status: "completed" | "in_progress" | "pending"
-  ) => {
-    await updateTask(id, { status });
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await updateTask(id, {
+        status: status as "completed" | "in_progress" | "pending",
+      });
+      toast({
+        title: "Status atualizado",
+        description: "O status da tarefa foi alterado.",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar status",
+        description:
+          error instanceof Error ? error.message : "Tente novamente.",
+        variant: "error",
+      });
+    }
   };
 
   const handleEditTask = (task: Task) => {
@@ -83,22 +108,20 @@ export function TasksList() {
 
   return (
     <>
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
         <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             Tarefas Recentes
           </h2>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "date" | "priority")}
-            className="px-3 py-1 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white cursor-pointer"
-          >
-            <option value="date">Por Data</option>
-            <option value="priority">Por Prioridade</option>
-          </select>
+          <div className="w-40">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectOption value="date">Por Data</SelectOption>
+              <SelectOption value="priority">Por Prioridade</SelectOption>
+            </Select>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className={recentTasks.length > 0 ? "overflow-visible pb-32" : ""}>
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
@@ -131,25 +154,14 @@ export function TasksList() {
                     </p>
                   </td>
                   <td className="px-6 py-4">
-                    <select
+                    <StatusSelect
                       value={task.status}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          task.id,
-                          e.target.value as
-                            | "completed"
-                            | "in_progress"
-                            | "pending"
-                        )
+                      onValueChange={(value) =>
+                        handleStatusChange(task.id, value)
                       }
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border-0 cursor-pointer ${getStatusColor(
-                        task.status
-                      )}`}
-                    >
-                      <option value="pending">Pendente</option>
-                      <option value="in_progress">Em Progresso</option>
-                      <option value="completed">Concluída</option>
-                    </select>
+                      options={STATUS_OPTIONS}
+                      className={getStatusColor(task.status)}
+                    />
                   </td>
                   <td className="px-6 py-4">
                     <span

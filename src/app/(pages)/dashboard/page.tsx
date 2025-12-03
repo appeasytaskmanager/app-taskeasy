@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import { Sidebar, TasksChart } from "@/app/components/view/dashboard";
-import { TasksProviderClient } from "@/app/components/view/dashboard/tasks-provider-client";
-import { Header } from "@/app/components/view/dashboard/header";
-import { MetricCards } from "@/app/components/view/dashboard/metric-cards";
-import { TasksList } from "@/app/components/view/dashboard/tasks-list";
-=======
 "use client";
 
 import {
@@ -14,18 +7,18 @@ import {
   TasksChart,
   TasksList,
 } from "@/app/components/view/dashboard";
+import { TasksProviderClient } from "@/app/components/view/dashboard/tasks-provider-client";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
->>>>>>> refs/heads/ajustando-reset-senha
 
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar />
+      <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
+        {/* Sidebar */}
+        <Sidebar />
 
-      {/* Main Content */}
-      <TasksProviderClient>
+        {/* Main Content */}
+        <TasksProviderClient>
         <div className="flex-1 flex flex-col overflow-hidden md:ml-0">
           {/* Header */}
           <Header />
@@ -97,10 +90,10 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </main>
-        </div>
-      </TasksProviderClient>
-    </div>
+          </main>
+          </div>
+        </TasksProviderClient>
+      </div>
     </ProtectedRoute>
   );
 }

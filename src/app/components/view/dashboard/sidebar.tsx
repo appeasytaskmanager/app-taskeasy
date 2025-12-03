@@ -1,50 +1,58 @@
-"use client"
+"use client";
 
 import {
-  Home,
   LayoutDashboard,
   CheckSquare,
   BarChart3,
-  Settings,
   LogOut,
   Menu,
   X,
   User as UserIcon,
-} from "lucide-react"
-import Link from "next/link"
-import { useRouter, usePathname } from "next/navigation"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/contexts/AuthContext"
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  AlertDialog,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/app/components/ui/alert-dialog";
 
 const navigation = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { name: "Tarefas", icon: CheckSquare, href: "/tasks" },
   { name: "Relatórios", icon: BarChart3, href: "/reports" },
-]
+];
 
 export function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const router = useRouter()
-  const pathname = usePathname()
-  const { user } = useAuth()
-
-  const handleSettings = () => {
-    router.push("/settings")
-    setIsOpen(false)
-  }
-
-  const { logout } = useAuth()
+  const [isOpen, setIsOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-    await logout()
-    setIsOpen(false)
-  }
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      setShowLogoutConfirm(false);
+      setIsOpen(false);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const isActive = (href: string) => {
-    return pathname === href || pathname.startsWith(href + "/")
-  }
+    return pathname === href || pathname.startsWith(href + "/");
+  };
 
   return (
     <>
@@ -76,7 +84,9 @@ export function Sidebar() {
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
             T
           </div>
-          <span className="font-semibold text-slate-900 dark:text-white">TaskEasy</span>
+          <span className="font-semibold text-slate-900 dark:text-white">
+            TaskEasy
+          </span>
         </div>
 
         {/* Navigation */}
@@ -115,7 +125,9 @@ export function Sidebar() {
             {isProfileMenuOpen && (
               <div className="mt-1 ml-3 pl-3 border-l border-slate-200 dark:border-slate-700 py-2 space-y-1">
                 <div className="px-2 py-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Usuário Logado</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Usuário Logado
+                  </p>
                   <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                     {user?.name || "Usuário"}
                   </p>
@@ -129,7 +141,7 @@ export function Sidebar() {
 
           {/* Sair */}
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full"
           >
             <LogOut className="w-4 h-4" />
@@ -137,6 +149,29 @@ export function Sidebar() {
           </button>
         </div>
       </aside>
+
+      {/* Modal de confirmação de logout */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Sair da aplicação</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tem certeza que deseja sair? Você precisará fazer login novamente
+            para acessar suas tarefas.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setShowLogoutConfirm(false)}>
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            variant="destructive"
+          >
+            {isLoggingOut ? "Saindo..." : "Sair"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialog>
     </>
-  )
+  );
 }

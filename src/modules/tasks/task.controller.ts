@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { TaskService } from "./task.service";
 import { NewTask } from "../../db/schema/tasks";
 import { authMiddleware } from "@/lib/auth";
@@ -48,10 +49,16 @@ export class TaskController {
         userId: userId,
         categoryId: categoryId,
         dueDate: dueDate ? new Date(dueDate) : null,
+        isDeleted: false, // Garante que a tarefa não seja marcada como deletada
       };
 
       // Chama o service
       const newTask = await taskService.createTask(taskData, userId);
+
+      // Revalida o cache das páginas que exibem tarefas
+      revalidatePath("/dashboard");
+      revalidatePath("/tasks");
+      revalidatePath("/reports");
 
       return NextResponse.json(newTask, { status: 201 });
     } catch (error) {
@@ -162,12 +169,31 @@ export class TaskController {
 
     const userId = authResult.userId as string;
 
-    const data = await req.json();
+    const body = await req.json();
+    const { title, description, status, priority, dueDate, categoryId } = body;
+
+    // Prepara dados para atualização (somente campos enviados)
+    const updateData: Record<string, any> = {};
+
+    if (title !== undefined) updateData.title = title.trim();
+    if (description !== undefined) updateData.description = description || null;
+    if (status !== undefined) updateData.status = status;
+    if (priority !== undefined) updateData.priority = priority;
+    if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (dueDate !== undefined) {
+      // Converte string para Date se necessário
+      updateData.dueDate = dueDate ? new Date(dueDate) : null;
+    }
 
     try {
-      const updateTask = await taskService.updateTask(id, userId, data);
+      const updatedTask = await taskService.updateTask(id, userId, updateData);
 
-      return NextResponse.json(updateTask, { status: 200 });
+      // Revalida o cache das páginas que exibem tarefas
+      revalidatePath("/dashboard");
+      revalidatePath("/tasks");
+      revalidatePath("/reports");
+
+      return NextResponse.json(updatedTask, { status: 200 });
     } catch (error: unknown) {
       if (error instanceof Error) {
         const status = error.message.includes("atualizar") ? 404 : 400;
@@ -190,6 +216,11 @@ export class TaskController {
 
     try {
       await taskService.deleteTask(id, userId);
+
+      // Revalida o cache das páginas que exibem tarefas
+      revalidatePath("/dashboard");
+      revalidatePath("/tasks");
+      revalidatePath("/reports");
 
       return new Response(null, { status: 204 }); //204 = sucesso sem conteúdo
     } catch (error: unknown) {

@@ -1,134 +1,155 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskService, Task, Category, CreateTaskData, UpdateTaskData } from "@/services/task.service";
+
+// Re-exporta tipos para uso em outros componentes
+export type { Task, Category, CreateTaskData, UpdateTaskData };
 
 export interface UseTasksReturn {
   tasks: Task[];
   categories: Category[];
   loading: boolean;
   error: string | null;
-  fetchTasks: () => Promise<void>;
+  fetchTasks: () => void;
   createTask: (task: CreateTaskData) => Promise<Task>;
   updateTask: (id: string, task: UpdateTaskData) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   searchTasks: (query: string) => Task[];
-  fetchCategories: () => Promise<void>;
+  fetchCategories: () => void;
 }
 
 export function useTasks(): UseTasksReturn {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Busca categorias
-  const fetchCategories = useCallback(async () => {
-    try {
-      const cats = await taskService.getCategories();
-      setCategories(cats);
-      
-      // Se não houver categorias, cria a padrão
-      if (cats.length === 0) {
-        const defaultCat = await taskService.getDefaultCategory();
-        setCategories([defaultCat]);
-      }
-    } catch (err) {
-      console.error('Erro ao buscar categorias:', err);
-      // Tenta obter categoria padrão
-      try {
-        const defaultCat = await taskService.getDefaultCategory();
-        setCategories([defaultCat]);
-      } catch (defaultErr) {
-        console.error('Erro ao obter categoria padrão:', defaultErr);
-      }
-    }
-  }, []);
-
-  // Busca tarefas da API
-  const fetchTasks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  // Query para buscar tarefas
+  const {
+    data: tasks = [],
+    isLoading: tasksLoading,
+    error: tasksError,
+    refetch: refetchTasks,
+  } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: async () => {
       const data = await taskService.getTasks();
-      setTasks(data);
-    } catch (err: any) {
-      setError(err.message || "Erro ao buscar tarefas");
-      setTasks([]); // Limpa tarefas em caso de erro
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      console.log("📋 Tarefas buscadas:", data.length, "tarefas");
+      return data;
+    },
+    staleTime: 0, // Sempre considerar dados como stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
 
-  // Cria nova tarefa
-  const createTask = useCallback(
-    async (task: CreateTaskData) => {
+  // Query para buscar categorias
+  const {
+    data: categories = [],
+    refetch: refetchCategories,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
       try {
-        const newTask = await taskService.createTask(task);
-        setTasks((prev) => [...prev, newTask]);
-        return newTask;
-      } catch (err: any) {
-        const errorMessage = err.message || "Erro ao criar tarefa";
-        setError(errorMessage);
-        throw new Error(errorMessage);
+        const cats = await taskService.getCategories();
+        
+        // Se não houver categorias, cria uma padrão para o usuário
+        if (cats.length === 0) {
+          try {
+            const defaultCat = await taskService.createCategory("Geral");
+            return [defaultCat];
+          } catch (createErr) {
+            console.error("Erro ao criar categoria padrão:", createErr);
+            return [];
+          }
+        }
+        
+        return cats;
+      } catch (err) {
+        console.error("Erro ao buscar categorias:", err);
+        return [];
       }
     },
-    []
-  );
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
 
-  // Atualiza tarefa
-  const updateTask = useCallback(async (id: string, updates: UpdateTaskData) => {
-    try {
-      const updated = await taskService.updateTask(id, updates);
-      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
-    } catch (err: any) {
-      const errorMessage = err.message || "Erro ao atualizar tarefa";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    }
-  }, []);
-
-  // Deleta tarefa
-  const deleteTask = useCallback(async (id: string) => {
-    try {
-      await taskService.deleteTask(id);
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    } catch (err: any) {
-      const errorMessage = err.message || "Erro ao deletar tarefa";
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    }
-  }, []);
-
-  // Busca tarefas por query
-  const searchTasks = useCallback(
-    (query: string) => {
-      if (!query.trim()) return tasks;
-      return tasks.filter(
-        (task) =>
-          task.title.toLowerCase().includes(query.toLowerCase()) ||
-          task.description?.toLowerCase().includes(query.toLowerCase())
-      );
+  // Mutation para criar tarefa
+  const createTaskMutation = useMutation({
+    mutationFn: async (task: CreateTaskData) => {
+      console.log("🚀 Criando tarefa:", task);
+      const newTask = await taskService.createTask(task);
+      console.log("✅ Tarefa criada:", newTask);
+      return newTask;
     },
-    [tasks]
-  );
+    onSuccess: () => {
+      // Invalida e re-busca as tarefas automaticamente
+      console.log("🔄 Invalidando cache de tarefas...");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error: any) => {
+      console.error("❌ Erro ao criar tarefa:", error);
+    },
+  });
 
-  // Busca tarefas e categorias ao montar
-  useEffect(() => {
-    fetchTasks();
-    fetchCategories();
-  }, [fetchTasks, fetchCategories]);
+  // Mutation para atualizar tarefa
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: UpdateTaskData }) => {
+      console.log("🔄 Atualizando tarefa:", id, updates);
+      const updated = await taskService.updateTask(id, updates);
+      console.log("✅ Tarefa atualizada:", updated);
+      return updated;
+    },
+    onSuccess: () => {
+      // Invalida e re-busca as tarefas automaticamente
+      console.log("🔄 Invalidando cache de tarefas...");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error: any) => {
+      console.error("❌ Erro ao atualizar tarefa:", error);
+    },
+  });
+
+  // Mutation para deletar tarefa
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      console.log("🗑️ Deletando tarefa:", id);
+      await taskService.deleteTask(id);
+      console.log("✅ Tarefa deletada");
+    },
+    onSuccess: () => {
+      // Invalida e re-busca as tarefas automaticamente
+      console.log("🔄 Invalidando cache de tarefas...");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error: any) => {
+      console.error("❌ Erro ao deletar tarefa:", error);
+    },
+  });
+
+  // Busca tarefas por query (local)
+  const searchTasks = (query: string) => {
+    const tasksList = Array.isArray(tasks) ? tasks : [];
+    if (!query.trim()) return tasksList;
+    return tasksList.filter(
+      (task) =>
+        task.title.toLowerCase().includes(query.toLowerCase()) ||
+        task.description?.toLowerCase().includes(query.toLowerCase())
+    );
+  };
 
   return {
     tasks,
     categories,
-    loading,
-    error,
-    fetchTasks,
-    createTask,
-    updateTask,
-    deleteTask,
+    loading: tasksLoading,
+    error: tasksError ? (tasksError as Error).message : null,
+    fetchTasks: () => refetchTasks(),
+    createTask: async (task: CreateTaskData) => {
+      return createTaskMutation.mutateAsync(task);
+    },
+    updateTask: async (id: string, updates: UpdateTaskData) => {
+      await updateTaskMutation.mutateAsync({ id, updates });
+    },
+    deleteTask: async (id: string) => {
+      await deleteTaskMutation.mutateAsync(id);
+    },
     searchTasks,
-    fetchCategories,
+    fetchCategories: () => refetchCategories(),
   };
 }

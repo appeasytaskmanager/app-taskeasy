@@ -30,13 +30,16 @@ export function ReportsContent() {
   const { tasks } = useTasks();
   const [selectedPeriod, setSelectedPeriod] = useState<"7" | "30">("7");
 
+  // Garante que tasks seja um array
+  const tasksList = Array.isArray(tasks) ? tasks : [];
+
   // Variáveis base
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === "completed").length;
-  const inProgressTasks = tasks.filter(
+  const totalTasks = tasksList.length;
+  const completedTasks = tasksList.filter((t) => t.status === "completed").length;
+  const inProgressTasks = tasksList.filter(
     (t) => t.status === "in_progress"
   ).length;
-  const pendingTasks = tasks.filter((t) => t.status === "pending").length;
+  const pendingTasks = tasksList.filter((t) => t.status === "pending").length;
 
   // Função para gerar dados de produtividade
   const generateProductivityData = (days: number) => {
@@ -89,11 +92,11 @@ export function ReportsContent() {
         name: "Alta",
         count:
           Math.round(
-            tasks.filter((t) => t.priority === "high").length * multiplier
+            tasksList.filter((t) => t.priority === "high").length * multiplier
           ) || 0,
         completed:
           Math.round(
-            tasks.filter(
+            tasksList.filter(
               (t) => t.priority === "high" && t.status === "completed"
             ).length * multiplier
           ) || 0,
@@ -102,11 +105,11 @@ export function ReportsContent() {
         name: "Média",
         count:
           Math.round(
-            tasks.filter((t) => t.priority === "medium").length * multiplier
+            tasksList.filter((t) => t.priority === "medium").length * multiplier
           ) || 0,
         completed:
           Math.round(
-            tasks.filter(
+            tasksList.filter(
               (t) => t.priority === "medium" && t.status === "completed"
             ).length * multiplier
           ) || 0,
@@ -115,11 +118,11 @@ export function ReportsContent() {
         name: "Baixa",
         count:
           Math.round(
-            tasks.filter((t) => t.priority === "low").length * multiplier
+            tasksList.filter((t) => t.priority === "low").length * multiplier
           ) || 0,
         completed:
           Math.round(
-            tasks.filter(
+            tasksList.filter(
               (t) => t.priority === "low" && t.status === "completed"
             ).length * multiplier
           ) || 0,

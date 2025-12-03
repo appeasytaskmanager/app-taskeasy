@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { CategoryService } from "./category.service";
 import { authMiddleware } from "@/lib/auth";
 import { NewCategory } from "@/db";
@@ -23,6 +24,11 @@ export class CategoryController {
                 // 2. LÓGICA DE NEGÓCIO: Injeta o userId e chama o Service
                 const newCategory = await categoryService.createCategory({ ...data, userId }, userId);
                 
+                // Revalida o cache das páginas que exibem categorias
+                revalidatePath("/dashboard");
+                revalidatePath("/tasks");
+                revalidatePath("/reports");
+
                 return NextResponse.json(newCategory,
                     { status: 201 }); // 201 Created
             } catch (error) {
@@ -91,6 +97,11 @@ export class CategoryController {
         try {
             const updatedCategory = await categoryService.updateCategory(id, userId, data);
 
+            // Revalida o cache das páginas que exibem categorias
+            revalidatePath("/dashboard");
+            revalidatePath("/tasks");
+            revalidatePath("/reports");
+
             return NextResponse.json(updatedCategory, { status: 200 });
         } catch (error){
             if(error instanceof Error){
@@ -110,6 +121,12 @@ export class CategoryController {
 
         try {
             await categoryService.deleteCategory(id, userId);
+
+            // Revalida o cache das páginas que exibem categorias
+            revalidatePath("/dashboard");
+            revalidatePath("/tasks");
+            revalidatePath("/reports");
+
             return new Response(null, { status: 204 }); // 204 No Content
         } catch (error){ 
             if(error instanceof Error){

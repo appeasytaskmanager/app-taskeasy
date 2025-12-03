@@ -17,10 +17,12 @@ export function MetricCards() {
   const { tasks } = useTasks()
 
   const metrics: MetricData[] = useMemo(() => {
-    const total = tasks.length
-    const completed = tasks.filter((t) => t.status === "completed").length
-    const pending = tasks.filter((t) => t.status === "pending").length
-    const inProgress = tasks.filter((t) => t.status === "in_progress").length
+    // Garante que tasks seja um array
+    const tasksList = Array.isArray(tasks) ? tasks : []
+    const total = tasksList.length
+    const completed = tasksList.filter((t) => t.status === "completed").length
+    const pending = tasksList.filter((t) => t.status === "pending").length
+    const inProgress = tasksList.filter((t) => t.status === "in_progress").length
     const rate = total > 0 ? Math.round((completed / total) * 100) : 0
 
     return [

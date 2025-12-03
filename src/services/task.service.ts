@@ -137,15 +137,15 @@ class TaskService {
   }
 
   /**
-   * Obtém ou cria categoria padrão "Geral"
+   * Cria uma nova categoria
    */
-  async getDefaultCategory(): Promise<Category> {
+  async createCategory(name: string): Promise<Category> {
     try {
-      const response = await api.get<Category>('/api/categories/default');
+      const response = await api.post<Category>('/api/categories', { name });
       return response.data;
     } catch (error: any) {
-      console.error('Erro ao obter categoria padrão:', error);
-      throw new Error('Erro ao obter categoria padrão.');
+      const errorMessage = error.response?.data?.error || 'Erro ao criar categoria.';
+      throw new Error(errorMessage);
     }
   }
 }
