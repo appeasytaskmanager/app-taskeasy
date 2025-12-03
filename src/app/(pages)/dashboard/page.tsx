@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Sidebar,
   Header,
@@ -5,9 +7,11 @@ import {
   TasksChart,
   TasksList,
 } from "@/app/components/view/dashboard";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function DashboardPage() {
   return (
+    <ProtectedRoute>
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
@@ -87,5 +91,6 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

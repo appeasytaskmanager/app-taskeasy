@@ -1,11 +1,15 @@
+"use client";
+
 import {
   Sidebar,
   Header,
 } from "@/app/components/view/dashboard"
 import { ReportsContent } from "@/app/components/view/reports"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 
 export default function ReportsPage() {
   return (
+    <ProtectedRoute>
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
@@ -21,5 +25,6 @@ export default function ReportsPage() {
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   )
 }

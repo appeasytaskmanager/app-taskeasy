@@ -15,7 +15,7 @@ import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/contexts/AuthContext"
 
 const navigation = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -35,15 +35,11 @@ export function Sidebar() {
     setIsOpen(false)
   }
 
+  const { logout } = useAuth()
+
   const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/sign", { method: "POST" })
-    } catch (err) {
-      console.error("Erro ao fazer logout:", err)
-    } finally {
-      router.push("/auth/login")
-      setIsOpen(false)
-    }
+    await logout()
+    setIsOpen(false)
   }
 
   const isActive = (href: string) => {
