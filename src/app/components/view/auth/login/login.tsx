@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/components/ui/button";
 import LogoEasyTask from "@/app/components/ui/logo";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ export function Login() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
 
   async function handleLogin(e: React.FormEvent) {
@@ -92,19 +93,29 @@ export function Login() {
             >
               Senha
             </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="********"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !loading) {
-                  handleLogin(e);
-                }
-              }}
-              className="px-4 py-3 border rounded-md text-sm text-zinc-800 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus:ring-2 ring-blue-500 outline-none"
-            />
+            <div className="flex items-center border rounded-md dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 focus-within:ring-2 focus-within:ring-blue-500">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="********"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !loading) {
+                    handleLogin(e);
+                  }
+                }}
+                className="flex-1 px-4 py-3 text-sm bg-transparent text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none rounded-l-md"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setShowPassword((v) => !v)}
+                className="px-3 grid place-items-center text-zinc-400 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {/* Mensagem de erro */}
