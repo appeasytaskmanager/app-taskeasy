@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { TaskControlleer } from '../../../modules/task.controller';
+import { TaskControlleer } from '../../../modules/tasks/task.controller';
 
 const taskController = new TaskControlleer();
 
@@ -16,5 +16,5 @@ export async function GET(request: NextRequest) {
 
     //o controller espera o objeto da request e o params
 
-    return taskController.listByUser(searchParams);
+    return taskController.listByUser(request, searchParams);
 }
