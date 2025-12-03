@@ -14,29 +14,45 @@ interface EditTaskModalProps {
 }
 
 export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
-  const { updateTask } = useTasks();
+  const { updateTask, categories, fetchCategories } = useTasks();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
     priority: "high" | "medium" | "low";
+    categoryId: string;
     dueDate: string;
     status: "completed" | "in_progress" | "pending";
   }>({
     title: "",
     description: "",
     priority: "medium",
+    categoryId: "",
     dueDate: "",
     status: "pending",
   });
 
+  // Carrega categorias quando o modal abre
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen, fetchCategories]);
+
   useEffect(() => {
     if (task) {
+      // Formata a data para o input (YYYY-MM-DD)
+      const dueDateFormatted = task.dueDate 
+        ? new Date(task.dueDate).toISOString().split('T')[0]
+        : "";
+      
       setFormData({
         title: task.title,
         description: task.description || "",
         priority: task.priority,
-        dueDate: task.dueDate,
+        categoryId: task.categoryId || "",
+        dueDate: dueDateFormatted,
         status: task.status,
       });
     }
@@ -44,18 +60,28 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!task || !formData.title.trim()) return;
+    
+    if (!task || !formData.title.trim()) {
+      setError("Título da tarefa é obrigatório.");
+      return;
+    }
 
+    setError(null);
     setLoading(true);
+
     try {
       await updateTask(task.id, {
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
         priority: formData.priority,
         status: formData.status,
-        dueDate: formData.dueDate,
+        categoryId: formData.categoryId || undefined,
+        dueDate: formData.dueDate || undefined,
       });
+      setError(null);
       onClose();
+    } catch (err: any) {
+      setError(err.message || "Erro ao atualizar tarefa. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -108,6 +134,26 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
               className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
               rows={3}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
+              Categoria
+            </label>
+            <select
+              value={formData.categoryId}
+              onChange={(e) =>
+                setFormData({ ...formData, categoryId: e.target.value })
+              }
+              className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
+            >
+              <option value="">Selecione uma categoria</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -168,6 +214,15 @@ export function EditTaskModal({ isOpen, task, onClose }: EditTaskModalProps) {
               className="w-full"
             />
           </div>
+
+          {/* Mensagem de erro */}
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                {error}
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button

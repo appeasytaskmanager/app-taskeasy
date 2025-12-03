@@ -1,6 +1,5 @@
-import { promises } from "dns";
-import { db } from "../db";
-import { tasks , NewTask, Task } from "../db/schema/tasks";
+import { db } from "@/lib/db";
+import { tasks, NewTask, Task } from "@/db/schema/tasks";
 import { eq, and, asc } from "drizzle-orm";
 
 
@@ -26,19 +25,22 @@ export class TaskRepository {
     // Garante que o user só acessa as suas tarefas
 
     async findByIdAndUser(id: string, userId: string): Promise<Task | undefined> {
-        return await db.select().from(tasks) //isso é = SELECT * FROM tasks
-        .where(and(eq(tasks. id, id), eq(tasks.userId, userId))) // aqui é a linha que compara os IDs
-        .limit(1)
-        .execute()
-        .then(rows => rows[0]);
+        const result = await db
+            .select()
+            .from(tasks)
+            .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+            .limit(1);
+        
+        return result[0];
     }
 
-    async listByUser(userId: string,  _filters?: unknown /* ajustar tipo de filtro depois */): Promise<Task[]> {
-        //Lógica de filtragem
-        return await db.select().from(tasks)
-        .where(eq(tasks.userId, userId))
-        .orderBy(asc(tasks.createdAt)) //ordena por criação
-        .execute();
+    async listByUser(userId: string, _filters?: unknown): Promise<Task[]> {
+        // Filtra apenas tarefas não deletadas (soft delete)
+        return await db
+            .select()
+            .from(tasks)
+            .where(and(eq(tasks.userId, userId), eq(tasks.isDeleted, false)))
+            .orderBy(asc(tasks.createdAt));
     }
 
     async update(id: string, userId: string, data: UpdateTaskData): Promise<Task | undefined> {

@@ -1,31 +1,70 @@
 import { NextResponse } from "next/server";
 import { TaskService } from "./task.service";
 import { NewTask } from '../db/schema/tasks';
-import next from "next";
-import { mock } from "node:test";
+import { URLSearchParams } from "url";
 
 const taskService = new TaskService();
 
-const MOCK_USER_ID = ''; //Ver como vai ficar essa parte
-
-export class TaskControlleer {
-    //post = /api/tasks (create)
-
-    async create (req: Request){
+export class TaskController {
+    /**
+     * POST /api/tasks
+     * Cria nova tarefa
+     */
+    async create(req: Request, userId: string) {
         try {
-            const data: NewTask = await req.json();
-            const userId = MOCK_USER_ID; //aqui é a lógica de autenticação
+            const body = await req.json();
+            const { title, description, status, priority, dueDate, categoryId } = body;
 
-            //formata os dados e chama o service
-            const newTask = await taskService.createTask({...data, userId }, userId);
+            // Validação básica
+            if (!title || !title.trim()) {
+                return NextResponse.json(
+                    { error: "Título da tarefa é obrigatório." },
+                    { status: 400 }
+                );
+            }
+
+            if (!categoryId) {
+                return NextResponse.json(
+                    { error: "Categoria é obrigatória." },
+                    { status: 400 }
+                );
+            }
+
+            // Prepara dados para criação
+            const taskData: NewTask = {
+                title: title.trim(),
+                description: description || null,
+                status: status || "pending",
+                priority: priority || "medium",
+                userId: userId,
+                categoryId: categoryId,
+                dueDate: dueDate ? new Date(dueDate) : null,
+            };
+
+            // Chama o service
+            const newTask = await taskService.createTask(taskData, userId);
 
             return NextResponse.json(newTask, { status: 201 });
         } catch (error) {
-            //lida com erros no service validações/regras de negócio
+            // Lida com erros do service (validações/regras de negócio)
             if (error instanceof Error) {
-                return NextResponse.json({ error: error.message }, { status: 400});
+                // Erros de validação (400)
+                if (error.message.includes("obrigatório") || error.message.includes("mínimo")) {
+                    return NextResponse.json(
+                        { error: error.message },
+                        { status: 400 }
+                    );
+                }
+                // Outros erros
+                return NextResponse.json(
+                    { error: error.message },
+                    { status: 400 }
+                );
             }
-            return NextResponse.json({ error: "Unknown error" }, { status: 400});
+            return NextResponse.json(
+                { error: "Erro ao criar tarefa." },
+                { status: 500 }
+            );
         }
     }
 
@@ -48,22 +87,31 @@ export class TaskControlleer {
         return NextResponse.json({ error: "erro interno do servidor."}, {status: 500});
     }
 
-    async listByUser (searchParams: URLSearchParams) {
-        //GET /api/tasks (Listagem)
-        //Nota: os filtros vão variar conforme os parametros de busca (searchParams)
-        const userId = MOCK_USER_ID;
+    /**
+     * GET /api/tasks
+     * Lista tarefas do usuário
+     */
+    async listByUser(searchParams: URLSearchParams, userId: string) {
+        try {
+            // Transforma os parâmetros de URL em um objeto de filtro simples
+            const filters = Object.fromEntries(searchParams.entries());
 
-        //transforma os paramtetros de URL em um objeto de filtro simples
-
-        const filters = Object.fromEntries(searchParams.entries());
-
-        try { 
+            // Chama o service
             const tasks = await taskService.listTasksByUser(userId, filters);
-            return NextResponse.json(tasks, {status: 200});
+            
+            return NextResponse.json(tasks, { status: 200 });
         } catch (error: unknown) {
+            console.error("Erro ao listar tarefas:", error);
             if (error instanceof Error) {
-                return NextResponse.json({ error: "Erro ao listar tarefas."}, {status: 500});
+                return NextResponse.json(
+                    { error: error.message || "Erro ao listar tarefas." },
+                    { status: 500 }
+                );
             }
+            return NextResponse.json(
+                { error: "Erro ao listar tarefas." },
+                { status: 500 }
+            );
         }
     }
 

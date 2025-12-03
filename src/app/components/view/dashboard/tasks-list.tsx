@@ -56,7 +56,7 @@ export function TasksList() {
   };
 
   const handleStatusChange = async (
-    id: number,
+    id: string,
     status: "completed" | "in_progress" | "pending"
   ) => {
     await updateTask(id, { status });
@@ -67,7 +67,7 @@ export function TasksList() {
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteTask = async (taskId: number) => {
+  const handleDeleteTask = async (taskId: string) => {
     await deleteTask(taskId);
   };
 
@@ -166,7 +166,9 @@ export function TasksList() {
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {new Date(task.dueDate).toLocaleDateString("pt-BR")}
+                      {task.dueDate 
+                        ? new Date(task.dueDate).toLocaleDateString("pt-BR")
+                        : "Sem data"}
                     </p>
                   </td>
                   <td className="px-6 py-4">

@@ -7,7 +7,7 @@ import { Task } from "@/hooks/use-tasks";
 interface TaskRowActionsProps {
   task: Task;
   onEdit: (task: Task) => void;
-  onDelete: (taskId: number) => void;
+  onDelete: (taskId: string) => void;
 }
 
 export function TaskRowActions({

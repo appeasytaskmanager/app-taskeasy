@@ -1,7 +1,7 @@
 "use client";
 
 import { useTasks } from "@/hooks/use-tasks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Input } from "@/app/components/ui/input";
 import { X } from "lucide-react";
@@ -13,40 +13,78 @@ interface NewTaskModalProps {
 }
 
 export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
-  const { createTask } = useTasks();
+  const { createTask, categories, fetchCategories } = useTasks();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
     priority: "high" | "medium" | "low";
+    categoryId: string;
     dueDate: string;
   }>({
     title: "",
     description: "",
     priority: "medium",
+    categoryId: "",
     dueDate: "",
   });
 
+  // Carrega categorias quando o modal abre
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen, fetchCategories]);
+
+  // Define categoria padrão quando categorias são carregadas
+  useEffect(() => {
+    if (categories.length > 0 && !formData.categoryId) {
+      setFormData((prev) => ({
+        ...prev,
+        categoryId: categories[0].id,
+      }));
+    }
+  }, [categories]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    
+    if (!formData.title.trim()) {
+      setError("Título da tarefa é obrigatório.");
+      return;
+    }
 
+    if (!formData.categoryId) {
+      setError("Categoria é obrigatória.");
+      return;
+    }
+
+    setError(null);
     setLoading(true);
+
     try {
       await createTask({
-        title: formData.title,
-        description: formData.description,
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
         priority: formData.priority,
         status: "pending",
-        dueDate: formData.dueDate || new Date().toISOString().split("T")[0],
+        categoryId: formData.categoryId,
+        dueDate: formData.dueDate || undefined,
       });
+      
+      // Limpa formulário
       setFormData({
         title: "",
         description: "",
         priority: "medium",
+        categoryId: categories[0]?.id || "",
         dueDate: "",
       });
+      setError(null);
       onClose();
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar tarefa. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -101,6 +139,27 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
+              Categoria
+            </label>
+            <select
+              value={formData.categoryId}
+              onChange={(e) =>
+                setFormData({ ...formData, categoryId: e.target.value })
+              }
+              className="w-full px-3 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm"
+              required
+            >
+              <option value="">Selecione uma categoria</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-900 dark:text-white mb-1">
@@ -136,6 +195,15 @@ export function NewTaskModal({ isOpen, onClose }: NewTaskModalProps) {
               />
             </div>
           </div>
+
+          {/* Mensagem de erro */}
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                {error}
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button
