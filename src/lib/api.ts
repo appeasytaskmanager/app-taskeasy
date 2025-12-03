@@ -1,12 +1,23 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
+// Função para obter a baseURL correta
+function getBaseURL(): string {
+  // No servidor (SSR), não tem window
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  }
+  
+  // No cliente, use a origem atual (funciona em qualquer domínio)
+  return window.location.origin;
+}
+
 // Configuração base do axios
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 segundos
+  timeout: 15000, // 15 segundos (aumentado para Vercel cold starts)
 });
 
 // Interceptor para adicionar token em todas as requisições
@@ -64,4 +75,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
