@@ -11,7 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "test": "node .github/init.js"
+    "test": "node .github/init.js; node .github/init.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
