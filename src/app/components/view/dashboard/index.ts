@@ -9,5 +9,6 @@ export { EditTaskModal } from "./edit-task-modal"
 export { TaskRowActions } from "./task-row-actions"
 export { NotificationDropdown } from "./notification-dropdown"
 export { UserMenu } from "./user-menu"
+export { UpcomingDeadlines } from "./upcoming-deadlines"
 
 export default {}

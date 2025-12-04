@@ -6,6 +6,7 @@ import {
   MetricCards,
   TasksChart,
   TasksList,
+  UpcomingDeadlines,
 } from "@/app/components/view/dashboard";
 import { TasksProviderClient } from "@/app/components/view/dashboard/tasks-provider-client";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -64,29 +65,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-                    Próximos Prazos
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="text-sm">
-                      <p className="font-medium text-slate-900 dark:text-white">
-                        Implementar Dashboard
-                      </p>
-                      <p className="text-slate-500 dark:text-slate-500">
-                        Hoje às 18h
-                      </p>
-                    </div>
-                    <div className="text-sm">
-                      <p className="font-medium text-slate-900 dark:text-white">
-                        Revisar Código
-                      </p>
-                      <p className="text-slate-500 dark:text-slate-500">
-                        Amanhã de manhã
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <UpcomingDeadlines />
               </div>
             </div>
           </div>
